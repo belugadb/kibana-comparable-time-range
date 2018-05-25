@@ -1,5 +1,5 @@
 {
-  "name": "kibana-comparing-table",
+  "name": "comparing_table",
   "version": "0.0.0",
   "description": "Adds a comparing offset feature to Kibana table",
   "main": "index.js",

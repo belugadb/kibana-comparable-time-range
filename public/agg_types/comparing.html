@@ -1,0 +1,50 @@
+<div ng-controller="aggParam.controller">
+  <table class="vis-editor-agg-editor-ranges form-group">
+    <tr>
+      <td>
+        <label id="visEditorDateRangeFrom{{agg.id}}">From</label>
+        <input
+          aria-labelledby="visEditorDateRangeFrom{{agg.id}}"
+          ng-model="agg.params.range.from"
+          validate-date-math
+          type="text"
+          class="form-control"
+          name="agg.params.range.from" />
+      </td>
+      <td>
+        <label id="visEditorDateRangeTo{{agg.id}}">To</label>
+        <input
+          aria-labelledby="visEditorDateRangeTo{{agg.id}}"
+          ng-model="agg.params.range.to"
+          validate-date-math
+          class="form-control"
+          name="agg.params.range.to" />
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        <label for="visEditorDateRangeComparing{{agg.id}}">Comparing</label>
+        <select
+          id="visEditorDateRangeComparing{{agg.id}}"
+          name="comparing"
+          ng-model="agg.params.range.comparing"
+          required
+          ng-options="offset as offset.display for offset in aggParam.comparingOffsets track by offset.offset"
+          class="form-control">
+        </select>
+      </td>
+      <td>
+        <label for="visEditorDateRangeFormat{{agg.id}}">Format</label>
+        <select
+          id="visEditorDateRangeFormat{{agg.id}}"
+          name="format"
+          ng-model="agg.params.range.format"
+          required
+          ng-options="format as format for format in aggParam.comparingFormats"
+          class="form-control">
+        </select>
+      </td>
+    </tr>
+  </table>
+</div>
