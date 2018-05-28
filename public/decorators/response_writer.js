@@ -12,5 +12,5 @@ export function decorateTabbedAggResponseWriterProvider(Private) {
     }
 
     return resp;
-  }
-};
+  };
+}

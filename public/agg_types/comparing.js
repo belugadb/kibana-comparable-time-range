@@ -1,6 +1,5 @@
 import { jstz as tzDetect } from 'jstimezonedetect';
 import moment from 'moment';
-import { dateRange } from 'ui/utils/date_range';
 import 'ui/directives/validate_date_math';
 import { AggTypesBucketsBucketAggTypeProvider } from 'ui/agg_types/buckets/_bucket_agg_type';
 import comparingAggTemplate from './comparing.html';
@@ -11,9 +10,9 @@ const COMPARING_OFFSETS = [
   { display: 'Previous Day', offset: '-1d', default: true },
   { display: 'Previous Week', offset: '-7d' },
   { display: 'Previous Month', offset: '-1M' },
-]
+];
 
-const COMPARING_FORMATS = [ '%', 'Absolute' ]
+const COMPARING_FORMATS = [ '%', 'Absolute' ];
 
 function dateStringBuilder(date, offset) {
   const insertIndex = date.indexOf('/') > 0 ? date.indexOf('/') : date.length;

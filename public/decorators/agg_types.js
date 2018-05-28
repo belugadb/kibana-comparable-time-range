@@ -7,9 +7,9 @@ import { AggTypesMetricsCountProvider } from 'ui/agg_types/metrics/count';
 export function decorateAggTypes(Private) {
   const AggTypes = Private(AggTypesIndexProvider);
   const AggComparing = Private(AggTypesBucketsComparingProvider);
-  const AggConfig = Private(VisAggConfigProvider);  
-  const MetricAggType = Private(AggTypesMetricsMetricAggTypeProvider);  
-  const CountAggType = Private(AggTypesMetricsCountProvider);  
+  const AggConfig = Private(VisAggConfigProvider);
+  const MetricAggType = Private(AggTypesMetricsMetricAggTypeProvider);
+  const CountAggType = Private(AggTypesMetricsCountProvider);
 
   // Adds getComparing and getDifference functions in AggConfig/MetricAggType/CountAggType
   AggConfig.prototype.getComparing = function (bucket) {
@@ -26,12 +26,12 @@ export function decorateAggTypes(Private) {
   };
   CountAggType.getComparing = function (agg, bucket) {
     return bucket.doc_count_comparing;
-  }
+  };
   CountAggType.getDifference = function (agg, bucket) {
     return bucket.doc_count_difference;
-  }
+  };
 
   // Adds AggComparing in AggTypes list
   AggComparing.type = 'buckets';
   AggTypes.push(AggComparing);
-};
+}

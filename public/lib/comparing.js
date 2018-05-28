@@ -33,5 +33,5 @@ export function ComparingProvider(Private) {
     const diffFn = isPercentage ? findDifferencePct : findDifferenceAbs;
     const diff = diffFn(n1, n2);
     return formatText(diff, isPercentage);
-  }
+  };
 }

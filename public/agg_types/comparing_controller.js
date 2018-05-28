@@ -6,7 +6,7 @@ export function comparingAggController($scope) {
   function checkBuckets() {
     const comparingBucket = $scope.vis.aggs.byTypeName.comparing[0];
     const lastBucket = _.findLast($scope.vis.getAggConfig(), agg => agg.schema.group === 'buckets');
-    const canUseAggregation = comparingBucket && lastBucket && lastBucket.id === comparingBucket.id
+    const canUseAggregation = comparingBucket && lastBucket && lastBucket.id === comparingBucket.id;
 
     // Removes error from comparing bucket
     if (comparingBucket.error) delete comparingBucket.error;

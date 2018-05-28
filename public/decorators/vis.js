@@ -72,4 +72,4 @@ export function decorateVis(Private) {
       }
     }
   });
-};
+}

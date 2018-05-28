@@ -4,7 +4,7 @@ import { decorateAggTypes } from './decorators/agg_types';
 import { decorateTabbedAggResponseWriterProvider } from './decorators/response_writer';
 import { decorateAggConfigResult } from './decorators/agg_config_result';
 import { decorateVis } from './decorators/vis';
-import './decorators/agg_table'
+import './decorators/agg_table';
 const appId = chrome.getApp().id;
 
 // Only inject decorator on kibana app
