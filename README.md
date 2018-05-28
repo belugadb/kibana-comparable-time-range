@@ -1,6 +1,6 @@
-# kibana-comparing-table
+# kibana-comparable-time-range
 
-> Adds a comparing offset feature to Kibana table
+> Comparable time range offset feature for Kibana table. Compare your data to previous day, week or month.
 
 ---
 

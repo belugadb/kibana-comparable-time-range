@@ -1,7 +1,7 @@
 export default kibana => new kibana.Plugin({
-  id: 'comparing_table',
+  id: 'comparable_time_range',
   require: ['kibana'],
   uiExports: {
-    hacks: [ 'plugins/comparing_table/comparing_hack' ]
+    hacks: [ 'plugins/comparable_time_range/comparing_hack' ]
   }
 });

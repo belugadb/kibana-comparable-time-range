@@ -1,12 +1,14 @@
 {
-  "name": "comparing_table",
-  "version": "0.0.0",
+  "name": "comparable_time_range",
+  "version": "0.0.1",
   "description": "Adds a comparing offset feature to Kibana table",
   "main": "index.js",
   "kibana": {
     "version": "6.1.1",
     "templateVersion": "7.2.4"
   },
+  "author": "Gustavo Matheus <gustavo.matheus@belugadb.com>",
+  "license": "Apache-2.0",
   "scripts": {
     "lint": "eslint **/*.js",
     "start": "plugin-helpers start",

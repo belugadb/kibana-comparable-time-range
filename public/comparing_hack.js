@@ -10,7 +10,7 @@ const appId = chrome.getApp().id;
 // Only inject decorator on kibana app
 if (appId === 'kibana') {
   uiModules
-    .get('comparing_table', ['kibana'])
+    .get('comparable_time_range', ['kibana'])
     .run((Private) => {
       decorateAggTypes(Private);
       decorateTabbedAggResponseWriterProvider(Private);
