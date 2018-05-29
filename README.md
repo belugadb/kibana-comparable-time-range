@@ -1,8 +1,10 @@
-# Comparable Time Range Plugin for Kibana
+[![belugadb-logo](docs/img/belugadb.png)](https://www.belugadb.com)
 
+# Comparable Time Range Plugin for Kibana
 > Comparable time range offset feature for Kibana table. Compare your data to previous day, week or month. :calendar:
 
-[![belugadb-logo](docs/img/belugadb.png)](https://www.belugadb.com)
+# Example Usage: Today vs. Previous Day
+![example-usage.gif](docs/img/example-usage.gif)
 
 ## Development
 

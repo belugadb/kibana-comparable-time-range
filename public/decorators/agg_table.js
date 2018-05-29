@@ -73,7 +73,7 @@ if (appId === 'kibana') {
                 default:
                   break;
               }
-              formattedColumn.total = `${formattedColumn.total}${differenceTotal}`;
+              formattedColumn.total = `${formattedColumn.total} ${differenceTotal}`;
 
               return formattedColumn;
             });

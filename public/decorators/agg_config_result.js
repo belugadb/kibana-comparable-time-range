@@ -4,6 +4,6 @@ export function decorateAggConfigResult() {
   const toStringFn = AggConfigResult.prototype.toString;
   AggConfigResult.prototype.toString = function () {
     const res = toStringFn.apply(this, arguments);
-    return this.difference ? `${res}${this.difference}` : res;
+    return this.difference ? `${res} ${this.difference}` : res;
   };
 }

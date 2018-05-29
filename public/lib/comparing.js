@@ -5,7 +5,7 @@ export function ComparingProvider(Private) {
   const percentFormatter = fieldFormats.getInstance('percent').getConverterFor('text');
   const numberFormatter = fieldFormats.getDefaultInstance('number').getConverterFor('text');
 
-  const INVALID_DIFF_TEXT = ' (--)';
+  const INVALID_DIFF_TEXT = '(--)';
 
   function roundDecimal(n) {
     return Math.round(n * 100) / 100.00;
@@ -30,7 +30,7 @@ export function ComparingProvider(Private) {
   function formatValue(diff, isPercentage) {
     const sign = (diff >= 0) ? '+' : '';
     const formatter = isPercentage ? percentFormatter : numberFormatter;
-    const text = ` (${sign}${formatter(diff)})`;
+    const text = `(${sign}${formatter(diff)})`;
     return getHTML(text, diff);
   }
 
