@@ -3,7 +3,7 @@
 # Comparable Time Range Plugin for Kibana
 > Comparable time range offset feature for Kibana table. Compare your data to previous day, week or month. :calendar:
 
-# Example Usage: Today vs. Previous Day
+## Example Usage: Today vs. Previous Day
 ![example-usage.gif](docs/img/example-usage.gif)
 
 ## Development
