@@ -6,6 +6,15 @@
 ## Example Usage: Today vs. Previous Day
 ![example-usage.gif](docs/img/example-usage.gif)
 
+## Installation
+This plugin is currently under development and it has been tested in Kibana `6.1.1` version only.
+To install, run this command from your Kibana project folder:
+```
+./bin/kibana-plugin install https://github.com/belugadb/kibana-comparable-time-range/releases/download/v0.0.1/comparable_time_range-0.0.1.zip
+```
+
+You can also install previous versions of this plugin. Check the [repository releases](https://github.com/belugadb/kibana-comparable-time-range/releases).
+
 ## Development
 
 See the [kibana contributing guide](https://github.com/elastic/kibana/blob/master/CONTRIBUTING.md) for instructions setting up your development environment. Once you have completed that, use the following npm tasks.
