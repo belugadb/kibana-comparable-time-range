@@ -18,16 +18,16 @@ export function decorateAggTypes(Private) {
   AggConfig.prototype.getDifference = function (bucket) {
     return this.type.getDifference(this, bucket);
   };
-  MetricAggType.prototype.getComparing = function (agg, bucket) {
+  MetricAggType.prototype.getComparing = (agg, bucket) => {
     return bucket[agg.id] && bucket[agg.id].comparing;
   };
-  MetricAggType.prototype.getDifference = function (agg, bucket) {
+  MetricAggType.prototype.getDifference = (agg, bucket) => {
     return bucket[agg.id] && bucket[agg.id].difference;
   };
-  CountAggType.getComparing = function (agg, bucket) {
+  CountAggType.getComparing = (agg, bucket) => {
     return bucket.doc_count_comparing;
   };
-  CountAggType.getDifference = function (agg, bucket) {
+  CountAggType.getDifference = (agg, bucket) => {
     return bucket.doc_count_difference;
   };
 

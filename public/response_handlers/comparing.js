@@ -3,7 +3,7 @@ import { AggResponseTabifyComparingProvider } from './tabify_comparing';
 import { VisResponseHandlersRegistryProvider } from 'ui/registry/vis_response_handlers';
 import { ComparingProvider } from '../lib/comparing';
 
-const ComparingResponseHandlerProvider = function (Private) {
+function ComparingResponseHandlerProvider(Private) {
   const tabifyComparing = Private(AggResponseTabifyComparingProvider);
   const getDifference = Private(ComparingProvider);
 
@@ -142,9 +142,8 @@ const ComparingResponseHandlerProvider = function (Private) {
 
   return {
     name: 'comparing',
-    handler: function (vis, response) {
-      return new Promise((resolve) => {
-
+    handler: (vis, response) => {
+      return new Promise(resolve => {
         const newResponse = handleComparingResponse(vis, response);
         const newVis = handleVis(vis);
 
@@ -157,7 +156,7 @@ const ComparingResponseHandlerProvider = function (Private) {
       });
     }
   };
-};
+}
 
 VisResponseHandlersRegistryProvider.register(ComparingResponseHandlerProvider);
 

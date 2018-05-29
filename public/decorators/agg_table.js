@@ -31,7 +31,7 @@ if (appId === 'kibana') {
             const isPercentage = isUsingComparing && table.columns[0] && table.columns[0].aggConfig.vis.comparingConfig.format === '%';
 
             // Calculates total difference from every $scope.formattedColumns element
-            $scope.formattedColumns = table.columns.map(function (col, i) {
+            $scope.formattedColumns = table.columns.map((col, i) => {
               const formattedColumn = $scope.formattedColumns[i];
 
               // Validations

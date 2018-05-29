@@ -34,9 +34,7 @@ export function AggTypesBucketsComparingProvider(config, Private) {
       {
         name: 'field',
         filterFieldTypes: 'date',
-        default: function (agg) {
-          return agg.vis.indexPattern.timeFieldName;
-        }
+        default: agg => agg.vis.indexPattern.timeFieldName
       },
       {
         name: 'range',
@@ -50,7 +48,7 @@ export function AggTypesBucketsComparingProvider(config, Private) {
         },
         editor: comparingAggTemplate,
         controller: comparingAggController,
-        write: function (aggConfig, output) {
+        write: (aggConfig, output) => {
           // Converts the form inputs into date_range expected params
           const { from, to, comparing  } = aggConfig.params.range;
 
