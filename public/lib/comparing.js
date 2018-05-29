@@ -20,10 +20,18 @@ export function ComparingProvider(Private) {
     return n2 - n1;
   }
 
-  function formatText(diff, isPercentage) {
+  function getHTML(text, diff) {
+    const styleClass = (diff >= 0)
+      ? 'comparing-text'
+      : 'comparing-text--negative';
+    return `<span class=${styleClass}>${text}</span>`;
+  }
+
+  function formatValue(diff, isPercentage) {
     const sign = (diff >= 0) ? '+' : '';
     const formatter = isPercentage ? percentFormatter : numberFormatter;
-    return ` (${sign}${formatter(diff)})`;
+    const text = ` (${sign}${formatter(diff)})`;
+    return getHTML(text, diff);
   }
 
   return function getDifference(n1, n2, isPercentage) {
@@ -32,6 +40,6 @@ export function ComparingProvider(Private) {
 
     const diffFn = isPercentage ? findDifferencePct : findDifferenceAbs;
     const diff = diffFn(n1, n2);
-    return formatText(diff, isPercentage);
+    return formatValue(diff, isPercentage);
   };
 }
