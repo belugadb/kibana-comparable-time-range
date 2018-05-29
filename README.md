@@ -1,10 +1,10 @@
-# kibana-comparable-time-range
+# Comparable Time Range Plugin for Kibana
 
-> Comparable time range offset feature for Kibana table. Compare your data to previous day, week or month.
+> Comparable time range offset feature for Kibana table. Compare your data to previous day, week or month. :calendar:
 
----
+[![belugadb-logo](docs/img/belugadb.png)](https://www.belugadb.com)
 
-## development
+## Development
 
 See the [kibana contributing guide](https://github.com/elastic/kibana/blob/master/CONTRIBUTING.md) for instructions setting up your development environment. Once you have completed that, use the following npm tasks.
 
@@ -34,7 +34,7 @@ For more information about any of these commands run `npm run ${task} -- --help`
 
 This software is licensed under the Apache License, version 2 ("ALv2"), quoted below.
 
-Copyright 2018 BelugaDB <https://www.belugadb.com/>
+Copyright 2018 BelugaDB <https://www.belugadb.com>
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not
 use this file except in compliance with the License. You may obtain a copy of
