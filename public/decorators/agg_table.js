@@ -58,21 +58,31 @@ if (appId === 'kibana') {
               // Adds differenceTotal into formattedColumn.total
               let totalRaw;
               let comparingTotal;
-              let differenceTotal;
               switch ($scope.totalFunc) {
                 case 'sum':
                   totalRaw = sum(table.rows);
                   comparingTotal = sumComparing(table.rows);
-                  differenceTotal = getDifference(comparingTotal, totalRaw, isPercentage);
                   break;
                 case 'avg':
                   totalRaw = sum(table.rows) / table.rows.length;
                   comparingTotal = sumComparing(table.rows) / table.rows.length;
-                  differenceTotal = getDifference(comparingTotal, totalRaw, isPercentage);
+                  break;
+                case 'min':
+                  totalRaw = Math.min(...table.rows.map(r => r[i].value));
+                  comparingTotal = Math.min(...table.rows.map(r => r[i].comparing));
+                  break;
+                case 'max':
+                  totalRaw = Math.max(...table.rows.map(r => r[i].value));
+                  comparingTotal = Math.max(...table.rows.map(r => r[i].comparing));
+                  break;
+                case 'count':
+                  totalRaw = table.rows.length;
+                  comparingTotal = table.rows.length;
                   break;
                 default:
                   break;
               }
+              const differenceTotal = getDifference(comparingTotal, totalRaw, isPercentage);
               formattedColumn.total = `${formattedColumn.total} ${differenceTotal}`;
 
               return formattedColumn;
