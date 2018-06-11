@@ -1,5 +1,6 @@
 import { VisTypesRegistryProvider } from 'ui/registry/vis_types';
 import { VisSchemasProvider } from 'ui/vis/editors/default/schemas';
+import { ComparingRequestHandlerProvider } from '../request_handlers/comparing';
 import { ComparingResponseHandlerProvider } from '../response_handlers/comparing';
 
 const ALLOWED_VIS_TYPES = ['table'];
@@ -38,6 +39,7 @@ function getAggFilter(aggFilter) {
 export function decorateVis(Private) {
   const VisTypes = Private(VisTypesRegistryProvider);
   const Schemas = Private(VisSchemasProvider);
+  const requestHandler = Private(ComparingRequestHandlerProvider).handler;
   const responseHandler = Private(ComparingResponseHandlerProvider).handler;
 
   VisTypes.forEach(vis => {
@@ -67,7 +69,8 @@ export function decorateVis(Private) {
         });
         vis.editorConfig.schemas = new Schemas(schemas);
 
-        // Modify the default responseHandler of the vis
+        // Modify the default requestHandler and responseHandler of the vis
+        vis.requestHandler = requestHandler;
         vis.responseHandler = responseHandler;
       }
     }
