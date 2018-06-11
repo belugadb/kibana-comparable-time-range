@@ -1,15 +1,91 @@
+// This is a copy of ui/vis/request_handlers/courier
+//  with global time filter overwritten by comparing config
+import _ from 'lodash'; // TODO: refactor lodash dependencies
+import dateMath from '@elastic/datemath';
+import moment from 'moment';
 import { VisRequestHandlersRegistryProvider } from 'ui/registry/vis_request_handlers';
-import { CourierRequestHandlerProvider } from 'ui/vis/request_handlers/courier';
 
 const ComparingRequestHandlerProvider = function (Private, courier, timefilter) {
-  const courierRequestHandler = Private(CourierRequestHandlerProvider);
+  /**
+   * Handles comparing agg, overriding global time filter if needed
+   * @param {*} vis
+   * @param {*} appState
+   * @param {*} searchSource
+   */
+  function handleComparing(vis, searchSource) {
+    const isUsingComparing = !!vis.aggs.byTypeName.comparing;
+
+    // Disables global time range filter if the query is using comparing agg.
+    //  Also needed to enable it again for future requests
+    searchSource.skipTimeRangeFilter = isUsingComparing;
+
+    // Stop executing function if comparing agg is missing
+    if (!isUsingComparing) return;
+
+    // Creates a new time range filter
+    const comparingAgg = vis.aggs.byTypeName.comparing[0];
+
+    const aggDateRanges = comparingAgg.toDsl().date_range.ranges;
+    const requestedDateRange = {
+      from: dateMath.parse(aggDateRanges[0].from),
+      to: dateMath.parse(aggDateRanges[1].to)
+    };
+
+    const timeRangeFilter = {
+      language: 'lucene',
+      query: {
+        range: {
+          '@timestamp': {
+            gte: moment(requestedDateRange.from).toISOString(),
+            lte: moment(requestedDateRange.to).toISOString()
+          }
+        }
+      }
+    };
+    searchSource.set('query', timeRangeFilter);
+  }
 
   return {
     name: 'comparing',
     handler: function (vis, appState, uiState, queryFilter, searchSource) {
 
-      console.log('comparing reqHandler decorator');
-      return courierRequestHandler.handler(...arguments);
+      if (queryFilter && vis.editorMode) {
+        searchSource.set('filter', queryFilter.getFilters());
+        searchSource.set('query', appState.query);
+      }
+
+      handleComparing(vis, searchSource);
+
+      const shouldQuery = () => {
+        if (!searchSource.lastQuery || vis.reload) return true;
+        if (!_.isEqual(_.cloneDeep(searchSource.get('filter')), searchSource.lastQuery.filter)) return true;
+        if (!_.isEqual(_.cloneDeep(searchSource.get('query')), searchSource.lastQuery.query)) return true;
+        if (!_.isEqual(_.cloneDeep(searchSource.get('aggs')()), searchSource.lastQuery.aggs)) return true;
+        if (!_.isEqual(_.cloneDeep(timefilter.time), searchSource.lastQuery.time)) return true;
+
+        return false;
+      };
+
+      return new Promise((resolve, reject) => {
+        if (shouldQuery()) {
+          delete vis.reload;
+          searchSource.onResults().then(resp => {
+            searchSource.lastQuery = {
+              filter: _.cloneDeep(searchSource.get('filter')),
+              query: _.cloneDeep(searchSource.get('query')),
+              aggs: _.cloneDeep(searchSource.get('aggs')()),
+              time: _.cloneDeep(timefilter.time)
+            };
+
+            searchSource.rawResponse = resp;
+            resolve(resp);
+          }).catch(e => reject(e));
+
+          courier.fetch();
+        } else {
+          resolve(searchSource.rawResponse);
+        }
+      });
     }
   };
 };
