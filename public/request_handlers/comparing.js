@@ -22,27 +22,27 @@ const ComparingRequestHandlerProvider = function (Private, courier, timefilter) 
     // Stop executing function if comparing agg is missing
     if (!isUsingComparing) return;
 
-    // Creates a new time range filter
+    // Gets requestedDateRange from comparing agg
     const comparingAgg = vis.aggs.byTypeName.comparing[0];
-
     const aggDateRanges = comparingAgg.toDsl().date_range.ranges;
     const requestedDateRange = {
       from: dateMath.parse(aggDateRanges[0].from),
       to: dateMath.parse(aggDateRanges[1].to)
     };
 
-    const timeRangeFilter = {
-      language: 'lucene',
+    // Creates a new time range filter
+    const currentFilter = [ ...searchSource.get('filter') ];
+    currentFilter.push({
       query: {
         range: {
-          '@timestamp': {
+          '@timestamp': { //TODO: replace @timestamp?
             gte: moment(requestedDateRange.from).toISOString(),
             lte: moment(requestedDateRange.to).toISOString()
           }
         }
       }
-    };
-    searchSource.set('query', timeRangeFilter);
+    });
+    searchSource.set('filter', currentFilter);
   }
 
   return {
