@@ -23,8 +23,9 @@ const ComparingRequestHandlerProvider = function (Private, courier, timefilter) 
     if (!isUsingComparing) return;
 
     // Gets requestedDateRange from comparing agg
-    const comparingAgg = vis.aggs.byTypeName.comparing[0];
-    const aggDateRanges = comparingAgg.toDsl().date_range.ranges;
+    const comparingAgg = vis.aggs.byTypeName.comparing[0].toDsl();
+    const timeField = comparingAgg.date_range.field;
+    const aggDateRanges = comparingAgg.date_range.ranges;
     const requestedDateRange = {
       from: dateMath.parse(aggDateRanges[0].from),
       to: dateMath.parse(aggDateRanges[1].to)
@@ -35,7 +36,7 @@ const ComparingRequestHandlerProvider = function (Private, courier, timefilter) 
     currentFilter.push({
       query: {
         range: {
-          '@timestamp': { //TODO: replace @timestamp?
+          [timeField]: {
             gte: moment(requestedDateRange.from).toISOString(),
             lte: moment(requestedDateRange.to).toISOString()
           }
