@@ -14,12 +14,6 @@ const ComparingRequestHandlerProvider = function (Private, courier, timefilter) 
    */
   function handleComparing(vis, searchSource) {
     const isUsingComparing = !!vis.aggs.byTypeName.comparing;
-
-    // Disables global time range filter if the query is using comparing agg.
-    //  Also needed to enable it again for future requests
-    searchSource.skipTimeRangeFilter = isUsingComparing;
-
-    // Stop executing function if comparing agg is missing
     if (!isUsingComparing) return;
 
     // Gets requestedDateRange from comparing agg
@@ -32,9 +26,10 @@ const ComparingRequestHandlerProvider = function (Private, courier, timefilter) 
     };
 
     // Creates a new time range filter
+    //  `comparing` field will be used in RootSearchSource.filter decorator
     const currentFilter = [ ...searchSource.get('filter') ];
     currentFilter.push({
-      comparing: true, // This will be used later to filter this query out
+      comparing: true,
       query: {
         range: {
           [timeField]: {
