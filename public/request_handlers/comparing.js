@@ -1,15 +1,15 @@
 // This is a copy of ui/vis/request_handlers/courier
 //  with global time filter overwritten by comparing config
 import _ from 'lodash'; // TODO: refactor lodash dependencies
-import dateMath from '@elastic/datemath';
 import moment from 'moment';
+import dateMath from '@elastic/datemath';
 import { VisRequestHandlersRegistryProvider } from 'ui/registry/vis_request_handlers';
 
 const ComparingRequestHandlerProvider = function (Private, courier, timefilter) {
   /**
    * Handles comparing agg, overriding global time filter if needed
+   *
    * @param {*} vis
-   * @param {*} appState
    * @param {*} searchSource
    */
   function handleComparing(vis, searchSource) {
@@ -34,6 +34,7 @@ const ComparingRequestHandlerProvider = function (Private, courier, timefilter) 
     // Creates a new time range filter
     const currentFilter = [ ...searchSource.get('filter') ];
     currentFilter.push({
+      comparing: true, // This will be used later to filter this query out
       query: {
         range: {
           [timeField]: {
@@ -46,6 +47,25 @@ const ComparingRequestHandlerProvider = function (Private, courier, timefilter) 
     searchSource.set('filter', currentFilter);
   }
 
+  /**
+   * Removes time range filter added by `handleComparing` function.
+   * This function should be called after the ES request happens.
+   * This approach is used in order to avoid keeping injected filter in appState!
+   *
+   * @param {*} vis
+   * @param {*} searchSource
+   */
+  function removeComparingFilter(vis, searchSource) {
+    const isUsingComparing = !!vis.aggs.byTypeName.comparing;
+    if (!isUsingComparing) return;
+
+    // Removes comparing time range filter
+    const currentFilter = [ ...searchSource.get('filter') ];
+    const filterWithoutComparing = currentFilter.filter(f => !f.comparing);
+    searchSource.set('filter', filterWithoutComparing);
+  }
+
+
   return {
     name: 'comparing',
     handler: function (vis, appState, uiState, queryFilter, searchSource) {
@@ -55,6 +75,7 @@ const ComparingRequestHandlerProvider = function (Private, courier, timefilter) 
         searchSource.set('query', appState.query);
       }
 
+      // Adds comparing time range filter if needed
       handleComparing(vis, searchSource);
 
       const shouldQuery = () => {
@@ -79,6 +100,10 @@ const ComparingRequestHandlerProvider = function (Private, courier, timefilter) 
             };
 
             searchSource.rawResponse = resp;
+
+            // Removes injected filter
+            removeComparingFilter(vis, searchSource);
+
             resolve(resp);
           }).catch(e => reject(e));
 
