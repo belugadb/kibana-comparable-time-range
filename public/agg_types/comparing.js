@@ -6,17 +6,30 @@ import comparingAggTemplate from './comparing.html';
 import { comparingAggController }from './comparing_controller';
 
 const COMPARING_OFFSETS = [
-  { display: 'None', offset: '-0d' },
-  { display: 'Previous Day', offset: '-1d', default: true },
-  { display: 'Previous Week', offset: '-7d' },
-  { display: 'Previous Month', offset: '-1M' },
+  {
+    display: 'None',
+    offset: { unit: 0, value: 'days' }
+  },
+  {
+    display: 'Previous Day',
+    offset: { unit: 1, value: 'day' },
+    default: true
+  },
+  {
+    display: 'Previous Week',
+    offset: { unit: 7, value: 'days' }
+  },
+  {
+    display: 'Previous Month',
+    offset: { unit: 1, value: 'month' }
+  }
 ];
 
 const COMPARING_FORMATS = [ '%', 'Absolute' ];
 
-function dateStringBuilder(date, offset) {
-  const insertIndex = date.indexOf('/') > 0 ? date.indexOf('/') : date.length;
-  return [date.slice(0, insertIndex), offset, date.slice(insertIndex)].join('');
+function getDate(date, offset) {
+  if (!offset) return date.toISOString();
+  return date.clone().subtract(offset.unit, offset.value).toISOString();
 }
 
 export function AggTypesBucketsComparingProvider(config, Private) {
@@ -49,19 +62,28 @@ export function AggTypesBucketsComparingProvider(config, Private) {
         editor: comparingAggTemplate,
         controller: comparingAggController,
         write: (aggConfig, output) => {
-          // Converts the form inputs into date_range expected params
-          const { from, to, comparing  } = aggConfig.params.range;
+          // Gets global timeFilter settings
+          const timeFilter = aggConfig.vis.API.timeFilter;
+          const timeFilterBounds = timeFilter.getBounds();
 
-          const comparingRange = {
-            from: dateStringBuilder(from, comparing.offset),
-            to: dateStringBuilder(to, comparing.offset)
-          };
+          // Gets offset config from agg
+          const { offset } = aggConfig.params.range.comparing;
+
+          // Builds date ranges array
+          const ranges = [
+            // Comparing date range
+            {
+              from: getDate(timeFilterBounds.min, offset),
+              to: getDate(timeFilterBounds.max, offset)
+            },
+            // Base date range
+            {
+              from: getDate(timeFilterBounds.min),
+              to: getDate(timeFilterBounds.max)
+            }
+          ];
 
           // Sets date ranges
-          const ranges = [
-            comparingRange,
-            { from, to }
-          ];
           output.params.ranges = ranges;
 
           // Sets agg time_zone

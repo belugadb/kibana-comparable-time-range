@@ -30,7 +30,7 @@
           name="comparing"
           ng-model="agg.params.range.comparing"
           required
-          ng-options="offset as offset.display for offset in aggParam.comparingOffsets track by offset.offset"
+          ng-options="offset as offset.display for offset in aggParam.comparingOffsets track by offset.display"
           class="form-control">
         </select>
       </td>
