@@ -54,8 +54,6 @@ export function AggTypesBucketsComparingProvider(config, Private) {
         comparingOffsets: COMPARING_OFFSETS,
         comparingFormats: COMPARING_FORMATS,
         default: {
-          from: 'now/d',
-          to: 'now',
           comparing: COMPARING_OFFSETS.find(offset => offset.default),
           format: '%'
         },
