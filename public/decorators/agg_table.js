@@ -39,7 +39,7 @@ if (appId === 'kibana') {
               const field = agg.getField();
               const isFieldDate = field && field.type === 'date';
               const isBucketColumn = agg.type.type === 'buckets';
-              if(isFieldDate || isBucketColumn) return formattedColumn;
+              if (isFieldDate || isBucketColumn) return formattedColumn;
 
               // Adds formatter into formattedColumn
               formattedColumn.formatter = agg.fieldFormatter('text');

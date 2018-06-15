@@ -8,7 +8,7 @@ export function decorateRootSearchSource(Private) {
   rootSearchSource.filter(function (globalSource) {
     // Returns no time range if the request is using comparing
     const isUsingComparing = !!globalSource.get('filter').find(f => f.comparing);
-    if(isUsingComparing) return;
+    if (isUsingComparing) return;
 
     // Otherwise, gets global time range from rootSearchSource
     return filterFn.apply(this, arguments);

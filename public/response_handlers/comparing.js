@@ -9,7 +9,7 @@ function ComparingResponseHandlerProvider(Private) {
 
   function getBucketValues(buckets, aggId) {
     // If aggId is missing, returns doc_count values
-    if(!aggId) {
+    if (!aggId) {
       return {
         comparing: buckets[0].doc_count,
         actual: buckets[1].doc_count

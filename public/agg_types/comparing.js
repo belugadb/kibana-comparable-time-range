@@ -3,25 +3,25 @@ import moment from 'moment';
 import 'ui/directives/validate_date_math';
 import { AggTypesBucketsBucketAggTypeProvider } from 'ui/agg_types/buckets/_bucket_agg_type';
 import comparingAggTemplate from './comparing.html';
-import { comparingAggController }from './comparing_controller';
+import { comparingAggController } from './comparing_controller';
 
 const COMPARING_OFFSETS = [
   {
     display: 'None',
-    offset: { unit: 0, value: 'days' }
+    offset: { value: 0, unit: 'days' }
   },
   {
     display: 'Previous Day',
-    offset: { unit: 1, value: 'day' },
+    offset: { value: 1, unit: 'day' },
     default: true
   },
   {
     display: 'Previous Week',
-    offset: { unit: 7, value: 'days' }
+    offset: { value: 7, unit: 'days' }
   },
   {
     display: 'Previous Month',
-    offset: { unit: 1, value: 'month' }
+    offset: { value: 1, unit: 'month' }
   }
 ];
 
@@ -29,7 +29,7 @@ const COMPARING_FORMATS = [ '%', 'Absolute' ];
 
 function getDate(date, offset) {
   if (!offset) return date.toISOString();
-  return date.clone().subtract(offset.unit, offset.value).toISOString();
+  return date.clone().subtract(offset.value, offset.unit).toISOString();
 }
 
 export function AggTypesBucketsComparingProvider(config, Private) {
