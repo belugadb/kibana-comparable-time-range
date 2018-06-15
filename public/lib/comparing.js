@@ -36,7 +36,7 @@ export function ComparingProvider(Private) {
 
   return function getDifference(n1, n2, isPercentage) {
     const isInvalidDiff = isPercentage && !n1;
-    if(isInvalidDiff) return INVALID_DIFF_TEXT;
+    if (isInvalidDiff) return INVALID_DIFF_TEXT;
 
     const diffFn = isPercentage ? findDifferencePct : findDifferenceAbs;
     const diff = diffFn(n1, n2);

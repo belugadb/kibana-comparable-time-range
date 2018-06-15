@@ -19,7 +19,7 @@ if (appId === 'kibana') {
             const shouldShowSpyPanel = $scope.shouldShowSpyPanel;
             $scope.shouldShowSpyPanel = () => {
               const isUsingComparing = $scope.vis.type.requestHandler === 'comparing';
-              if(isUsingComparing && $scope.vis.type.requiresSearch && $scope.showSpyPanel) return true;
+              if (isUsingComparing && $scope.vis.type.requiresSearch && $scope.showSpyPanel) return true;
               return shouldShowSpyPanel();
             };
           };
