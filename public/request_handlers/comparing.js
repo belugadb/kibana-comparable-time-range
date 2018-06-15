@@ -34,7 +34,8 @@ const ComparingRequestHandlerProvider = function (Private, courier, timefilter) 
         range: {
           [timeField]: {
             gte: moment(requestedDateRange.from).toISOString(),
-            lte: moment(requestedDateRange.to).toISOString()
+            lte: moment(requestedDateRange.to).toISOString(),
+            format: 'date_time'
           }
         }
       }
