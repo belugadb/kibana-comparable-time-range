@@ -7,6 +7,9 @@ import { decorateVis } from './decorators/vis';
 import { decorateAggConfigResult } from './decorators/agg_config_result';
 import './decorators/agg_table';
 import './decorators/paginated_table';
+import './decorators/visualize';
+import './request_handlers/comparing';
+import './response_handlers/comparing';
 import './styles/comparing.less';
 const appId = chrome.getApp().id;
 
