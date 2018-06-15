@@ -81,8 +81,9 @@ export function AggTypesBucketsComparingProvider(config, Private) {
             }
           ];
 
-          // Sets date ranges
+          // Sets date ranges and date format
           output.params.ranges = ranges;
+          output.params.format = 'date_time';
 
           // Sets agg time_zone
           const isDefaultTimezone = config.isDefault('dateFormat:tz');
