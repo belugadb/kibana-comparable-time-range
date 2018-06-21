@@ -22,6 +22,9 @@ const COMPARING_OFFSETS = [
   {
     display: 'Previous Month',
     offset: { value: 1, unit: 'month' }
+  },
+  {
+    display: 'Custom'
   }
 ];
 
@@ -55,6 +58,10 @@ export function AggTypesBucketsComparingProvider(config, Private) {
         comparingFormats: COMPARING_FORMATS,
         default: {
           comparing: COMPARING_OFFSETS.find(offset => offset.default),
+          custom: {
+            from: '',
+            to: ''
+          },
           format: '%'
         },
         editor: comparingAggTemplate,
