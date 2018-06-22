@@ -1,5 +1,6 @@
-import { jstz as tzDetect } from 'jstimezonedetect';
 import moment from 'moment';
+import { jstz as tzDetect } from 'jstimezonedetect';
+import dateMath from '@elastic/datemath';
 import 'ui/directives/validate_date_math';
 import { AggTypesBucketsBucketAggTypeProvider } from 'ui/agg_types/buckets/_bucket_agg_type';
 import comparingAggTemplate from './comparing.html';
@@ -31,8 +32,9 @@ const COMPARING_OFFSETS = [
 const COMPARING_FORMATS = [ '%', 'Absolute' ];
 
 function getDate(date, offset) {
-  if (!offset) return date.toISOString();
-  return date.clone().subtract(offset.value, offset.unit).toISOString();
+  const momentDate = moment.isMoment(date) ? date : dateMath.parse(date);
+  if (!offset) return momentDate.toISOString();
+  return momentDate.clone().subtract(offset.value, offset.unit).toISOString();
 }
 
 export function AggTypesBucketsComparingProvider(config, Private) {
@@ -74,13 +76,19 @@ export function AggTypesBucketsComparingProvider(config, Private) {
           // Gets offset config from agg
           const { offset } = aggConfig.params.range.comparing;
 
+          // Handles custom comparing
+          const isCustomComparing = aggConfig.params.range.comparing.display === 'Custom';
+          const customComparing = aggConfig.params.range.custom;
+
+          // Comparing date range
+          const comparingRanges = {
+            from: isCustomComparing ? getDate(customComparing.from) : getDate(timeFilterBounds.min, offset),
+            to: isCustomComparing ? getDate(customComparing.to) : getDate(timeFilterBounds.max, offset)
+          };
+
           // Builds date ranges array
           const ranges = [
-            // Comparing date range
-            {
-              from: getDate(timeFilterBounds.min, offset),
-              to: getDate(timeFilterBounds.max, offset)
-            },
+            comparingRanges,
             // Base date range
             {
               from: getDate(timeFilterBounds.min),
