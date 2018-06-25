@@ -32,7 +32,7 @@ const COMPARING_OFFSETS = [
 const COMPARING_FORMATS = [ '%', 'Absolute' ];
 
 function getDate(date, offset) {
-  const momentDate = moment.isMoment(date) ? date : dateMath.parse(date);
+  const momentDate = moment.isMoment(date) ? date : dateMath.parse(date) || moment();
   if (!offset) return momentDate.toISOString();
   return momentDate.clone().subtract(offset.value, offset.unit).toISOString();
 }
