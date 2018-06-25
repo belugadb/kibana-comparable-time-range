@@ -32,9 +32,28 @@ const COMPARING_OFFSETS = [
 const COMPARING_FORMATS = [ '%', 'Absolute' ];
 
 function getDate(date, offset) {
-  const momentDate = moment.isMoment(date) ? date : dateMath.parse(date) || moment();
-  if (!offset) return momentDate.toISOString();
-  return momentDate.clone().subtract(offset.value, offset.unit).toISOString();
+  if (!offset) return date.toISOString();
+  return date.clone().subtract(offset.value, offset.unit).toISOString();
+}
+
+/**
+ * Rounds up `customComparing.to` to the end of the day if needed
+ *
+ * @param { from, to } customComparing
+ */
+function handleCustomDate(customComparing) {
+  // Checks if `customComparing.to` is using day format.
+  //  If so, rounds it to the end of the day
+  //  TODO: Add custom error when fields are empty
+  const isEndDateUsingTime = customComparing.to && customComparing.to.includes(':');
+  const momentEndDate = moment(customComparing.to);
+  const isEndDateInDayFormat = !isEndDateUsingTime && momentEndDate.isSame(momentEndDate.startOf('day'));
+
+  const endDate = dateMath.parse(customComparing.to) || moment();
+  return {
+    from: dateMath.parse(customComparing.from) || moment(),
+    to: isEndDateInDayFormat ? endDate.endOf('day') : endDate
+  };
 }
 
 export function AggTypesBucketsComparingProvider(config, Private) {
@@ -78,7 +97,7 @@ export function AggTypesBucketsComparingProvider(config, Private) {
 
           // Handles custom comparing
           const isCustomComparing = aggConfig.params.range.comparing.display === 'Custom';
-          const customComparing = aggConfig.params.range.custom;
+          const customComparing = handleCustomDate(aggConfig.params.range.custom);
 
           // Comparing date range
           const comparingRanges = {
