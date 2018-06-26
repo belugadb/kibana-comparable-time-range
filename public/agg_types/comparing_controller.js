@@ -1,8 +1,12 @@
 import _ from 'lodash'; // TODO: refactor lodash dependencies
 
 export function comparingAggController($scope) {
-  $scope.$watch('responseValueAggs', checkBuckets);
 
+  $scope.isCustomComparing = () => {
+    return $scope.agg.params.range.comparing.display === 'Custom';
+  };
+
+  $scope.$watch('responseValueAggs', checkBuckets);
   function checkBuckets() {
     const comparingBucket = $scope.vis.aggs.byTypeName.comparing[0];
     const lastBucket = _.findLast($scope.vis.getAggConfig(), agg => agg.schema.group === 'buckets');

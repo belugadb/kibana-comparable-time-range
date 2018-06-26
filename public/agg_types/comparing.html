@@ -23,13 +23,14 @@
       </select>
     </div>
   </div>
-  <div class="vis-editor-agg-form-row" ng-show="agg.params.range.comparing.display === 'Custom'">
+  <div class="vis-editor-agg-form-row" ng-show="isCustomComparing()">
     <div class="form-group">
       <label id="visEditorDateRangeFrom{{agg.id}}">From</label>
       <input
         aria-labelledby="visEditorDateRangeFrom{{agg.id}}"
         ng-model="agg.params.range.custom.from"
         validate-date-math
+        ng-required="isCustomComparing()"
         type="text"
         class="form-control"
         name="agg.params.range.custom.from"
@@ -41,6 +42,7 @@
         aria-labelledby="visEditorDateRangeTo{{agg.id}}"
         ng-model="agg.params.range.custom.to"
         validate-date-math
+        ng-required="isCustomComparing()"
         class="form-control"
         name="agg.params.range.custom.to"
         placeholder="yyyy/mm/dd HH:mm" />
