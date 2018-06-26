@@ -2,6 +2,7 @@ import moment from 'moment';
 import { jstz as tzDetect } from 'jstimezonedetect';
 import dateMath from '@elastic/datemath';
 import 'ui/directives/validate_date_math';
+import 'ui/directives/documentation_href';
 import { AggTypesBucketsBucketAggTypeProvider } from 'ui/agg_types/buckets/_bucket_agg_type';
 import comparingAggTemplate from './comparing.html';
 import { comparingAggController } from './comparing_controller';
