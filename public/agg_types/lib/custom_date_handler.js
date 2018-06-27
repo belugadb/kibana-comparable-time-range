@@ -16,7 +16,7 @@ export function handleCustomDate(customComparing) {
   //  If so, rounds it to the end of the day
   const isEndDateUsingTime = customComparing.to && customComparing.to.includes(':');
   const momentEndDate = moment(customComparing.to);
-  const isEndDateInDayFormat = !isEndDateUsingTime && momentEndDate.isSame(momentEndDate.startOf('day'));
+  const isEndDateInDayFormat = !isEndDateUsingTime && momentEndDate.isSame(momentEndDate.clone().startOf('day'));
 
   const endDate = dateMath.parse(customComparing.to) || moment();
   return {
