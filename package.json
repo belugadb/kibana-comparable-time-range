@@ -1,6 +1,6 @@
 {
   "name": "comparable_time_range",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Adds a comparing offset feature to Kibana table",
   "main": "index.js",
   "kibana": {
