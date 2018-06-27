@@ -10,8 +10,14 @@ export function comparingAggController($scope) {
   $scope.hasDifferentRanges = () => {
     if (!$scope.isCustomComparing()) return false;
 
-    // Gets comparing time range
-    const customComparing = handleCustomDate($scope.agg.params.range.custom);
+    // Checks if input texts are not empty
+    const customComparingTexts = $scope.agg.params.range.custom;
+    const isNullOrEmpty = text => text == null || text === '' || text && text.trim() === '';
+    const hasEmptyFields = isNullOrEmpty(customComparingTexts.from) || isNullOrEmpty(customComparingTexts.to);
+    if (hasEmptyFields) return false;
+
+    // Gets comparing time ranges
+    const customComparing = handleCustomDate(customComparingTexts);
     const comparingDuration = customComparing.to.diff(customComparing.from);
 
     // Checks if input texts are valid dates
