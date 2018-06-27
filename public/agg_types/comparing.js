@@ -1,11 +1,11 @@
 import moment from 'moment';
 import { jstz as tzDetect } from 'jstimezonedetect';
-import dateMath from '@elastic/datemath';
 import 'ui/directives/validate_date_math';
 import 'ui/directives/documentation_href';
 import { AggTypesBucketsBucketAggTypeProvider } from 'ui/agg_types/buckets/_bucket_agg_type';
 import comparingAggTemplate from './comparing.html';
 import { comparingAggController } from './comparing_controller';
+import { handleCustomDate } from './lib/custom_date_handler';
 
 const COMPARING_OFFSETS = [
   {
@@ -35,30 +35,6 @@ const COMPARING_FORMATS = [ '%', 'Absolute' ];
 function getDate(date, offset) {
   if (!offset) return date.toISOString();
   return date.clone().subtract(offset.value, offset.unit).toISOString();
-}
-
-/**
- * Rounds up `customComparing.to` to the end of the day if needed.
- * Returns the current time (`moment()`) if the field is missing.
- *
- * @param { from, to } customComparing
- */
-function handleCustomDate(customComparing) {
-  // If customComparing is missing,
-  //  returns the object as if the fields are empty.
-  if (!customComparing) return { from: moment(), to: moment() };
-
-  // Checks if `customComparing.to` is using day format.
-  //  If so, rounds it to the end of the day
-  const isEndDateUsingTime = customComparing.to && customComparing.to.includes(':');
-  const momentEndDate = moment(customComparing.to);
-  const isEndDateInDayFormat = !isEndDateUsingTime && momentEndDate.isSame(momentEndDate.startOf('day'));
-
-  const endDate = dateMath.parse(customComparing.to) || moment();
-  return {
-    from: dateMath.parse(customComparing.from) || moment(),
-    to: isEndDateInDayFormat ? endDate.endOf('day') : endDate
-  };
 }
 
 export function AggTypesBucketsComparingProvider(config, Private) {
