@@ -1,9 +1,29 @@
 import _ from 'lodash'; // TODO: refactor lodash dependencies
+import { handleCustomDate } from './lib/custom_date_handler';
 
 export function comparingAggController($scope) {
 
   $scope.isCustomComparing = () => {
     return $scope.agg.params.range.comparing.display === 'Custom';
+  };
+
+  $scope.hasDifferentRanges = () => {
+    if (!$scope.isCustomComparing()) return false;
+
+    // Gets comparing time range
+    const customComparing = handleCustomDate($scope.agg.params.range.custom);
+    const comparingDuration = customComparing.to.diff(customComparing.from);
+
+    // Checks if input texts are valid dates
+    const hasValidDates = customComparing.from.isValid() && customComparing.to.isValid();
+    if (!hasValidDates) return false;
+
+    // Gets global timeFilter settings
+    const timeFilter = $scope.vis.API.timeFilter;
+    const timeFilterBounds = timeFilter.getBounds();
+    const timeFilterDuration = timeFilterBounds.max.diff(timeFilterBounds.min);
+
+    return (timeFilterDuration !== comparingDuration);
   };
 
   $scope.$watch('responseValueAggs', checkBuckets);

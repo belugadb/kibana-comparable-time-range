@@ -2,7 +2,15 @@
     <table class="comparing-form-table form-group">
       <tr>
         <td class="comparing-form-table__field">
-            <label for="visEditorDateRangeComparing{{agg.id}}">Comparing</label>
+            <label for="visEditorDateRangeComparing{{agg.id}}">
+              Comparing
+              <kbn-info
+                ng-show="hasDifferentRanges()"
+                placement="right"
+                class="text-warning"
+                info="Comparing time range length is different from the current data">
+              </kbn-info>
+            </label>
             <select
               id="visEditorDateRangeComparing{{agg.id}}"
               name="comparing"
