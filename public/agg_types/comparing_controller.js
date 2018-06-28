@@ -12,7 +12,7 @@ export function comparingAggController($scope) {
     if (!$scope.isCustomComparing() || !customComparingTexts) return false;
 
     // Checks if input texts are not empty
-    const isNullOrEmpty = text => text == null || text === '' || text && text.trim() === '';
+    const isNullOrEmpty = text => text == null || text.trim() === '';
     const hasEmptyFields = isNullOrEmpty(customComparingTexts.from) || isNullOrEmpty(customComparingTexts.to);
     if (hasEmptyFields) return false;
 
