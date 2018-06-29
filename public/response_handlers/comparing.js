@@ -1,4 +1,5 @@
 import _ from 'lodash'; // TODO: refactor lodash dependencies
+import moment from 'moment';
 import { AggResponseTabifyComparingProvider } from './tabify_comparing';
 import { VisResponseHandlersRegistryProvider } from 'ui/registry/vis_response_handlers';
 import { ComparingProvider } from '../lib/comparing';
@@ -24,6 +25,12 @@ function ComparingResponseHandlerProvider(Private) {
 
   function containsAgg(obj, aggId) {
     return Object.keys(obj).includes(aggId);
+  }
+
+  function getDate(date, offset) {
+    const momentDate = moment(date);
+    if (!offset) return momentDate;
+    return momentDate.clone().subtract(offset.value, offset.unit);
   }
 
   /**
@@ -91,6 +98,63 @@ function ComparingResponseHandlerProvider(Private) {
     }
   }
 
+  function handleDateHistogramResponse(vis, response, comparingAgg) {
+    if (!vis.aggs.byTypeName.date_histogram) return response;
+
+    // TODO: handle custom
+    const comparingAggId = comparingAgg.id;
+    const comparingOffset = comparingAgg.params.range.comparing.offset;
+
+    // Considering there's only one date_histogram agg
+    //  TODO: Limit query to have only one date_histogram
+    const dateHistogramAgg = vis.aggs.byTypeName.date_histogram[0];
+
+    // TODO: implement a recursive function that finds nested date_histogram aggregations
+    //  This case will only work if date_histogram is the first one
+    const dateHistogramBuckets = response.aggregations[dateHistogramAgg.id].buckets;
+
+    // Extract the comparing values from sibbling buckets
+    const bucketsWithComparing = dateHistogramBuckets.map(bucket => {
+      // Gets comparing date to look for in sibbling buckets
+      const comparingBucketDate = getDate(bucket.key, comparingOffset);
+
+      // Finds comparingBucket using comparing date
+      const comparingBucket = dateHistogramBuckets.find(b => b.key === comparingBucketDate.valueOf());
+
+      // If no comparingBucket is found, discards the bucket itself
+      //  This is used later in order to filter out unwanted buckets
+      if (!comparingBucket) return null;
+
+      // Builds new comparing agg bucket based on comapring date range
+      //  from comparingBucket and base date range from bucket
+      const newComparingBuckets = [
+        comparingBucket[comparingAggId].buckets[0],
+        bucket[comparingAggId].buckets[1]
+      ];
+
+      return {
+        ...bucket,
+        [comparingAggId]: {
+          ...bucket[comparingAggId],
+          buckets: newComparingBuckets
+        }
+      };
+    })
+      // Filters out unwanted `null` buckets
+      .filter(b => !!b);
+
+    return {
+      ...response,
+      aggregations: {
+        ...response.aggregations,
+        [dateHistogramAgg.id]: {
+          ...response.aggregations[dateHistogramAgg.id],
+          buckets: bucketsWithComparing
+        }
+      }
+    };
+  }
+
   function handleComparingResponse(vis, response) {
     if (!vis.aggs.byTypeName.comparing) return response;
 
@@ -104,8 +168,11 @@ function ComparingResponseHandlerProvider(Private) {
       .filter(agg => agg.type.name !== 'count' && agg.type.name !== 'datasweet_formula')
       .map(agg => agg.id);
 
+    // Handles date_histogram aggregation if needed
+    const newResponse = handleDateHistogramResponse(vis, response, comparingAgg);
+
     // Finds comparingAgg recursively and formats response.aggs object
-    const formattedAggs = findComparingAgg(response.aggregations, comparingAgg.id, metricsAggsIds, isPercentage);
+    const formattedAggs = findComparingAgg(newResponse.aggregations, comparingAgg.id, metricsAggsIds, isPercentage);
 
     // If there's only comparingAgg in bucket aggs, changes the hits.total value
     // TODO: handle others metric calcs
