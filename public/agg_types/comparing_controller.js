@@ -1,8 +1,12 @@
 import _ from 'lodash'; // TODO: refactor lodash dependencies
 import { handleCustomDate } from './lib/custom_date_handler';
 
-export function comparingAggController($scope) {
+const VALIDATION_ERROR_MESSAGES = {
+  LAST_BUCKET: '"Comparing" must be the last bucket aggregation!',
+  MAX_DATE_RANGE: 'Only one date range aggregation is allowed when using "Comparing" aggregation'
+};
 
+export function comparingAggController($scope) {
   $scope.isCustomComparing = () => {
     return $scope.agg.params.range.comparing.display === 'Custom';
   };
@@ -32,21 +36,35 @@ export function comparingAggController($scope) {
     return (timeFilterDuration !== comparingDuration);
   };
 
+  // `vis.getAggConfig()` is used because `vis.aggs.byTypeName`
+  //  is wrongly mapping `undefined` type for new aggregations
+  function getAggByType(type) {
+    return $scope.vis.getAggConfig().filter(agg => agg.type && agg.type.name === type);
+  }
+
   $scope.$watch('responseValueAggs', checkBuckets);
   function checkBuckets() {
-    const comparingBucket = $scope.vis.aggs.byTypeName.comparing[0];
+    let errorMessage = '';
+
+    // Checks if comparing is last bucket
+    const comparingBucket = getAggByType('comparing')[0];
     const lastBucket = _.findLast($scope.vis.getAggConfig(), agg => agg.schema.group === 'buckets');
-    const canUseAggregation = comparingBucket && lastBucket && lastBucket.id === comparingBucket.id;
+    const isLastBucket = comparingBucket && lastBucket && lastBucket.id === comparingBucket.id;
+    if (!isLastBucket) errorMessage = VALIDATION_ERROR_MESSAGES.LAST_BUCKET;
+
+    // Checks if only one date_histogram is used
+    const dateHistogramAggs = getAggByType('date_histogram');
+    const maxOneDateHistogram = dateHistogramAggs && dateHistogramAggs.length <= 1;
+    const isDateHistogramValid = dateHistogramAggs ? maxOneDateHistogram : true;
+    if (!isDateHistogramValid) errorMessage = VALIDATION_ERROR_MESSAGES.MAX_DATE_RANGE;
+
+    const canUseAggregation = isLastBucket && isDateHistogramValid;
 
     // Removes error from comparing bucket
     if (comparingBucket.error) delete comparingBucket.error;
 
-    // Adds an error message if last bucket isn't "Comparing"
-    if ($scope.aggForm.agg) {
-      $scope.aggForm.agg.$setValidity('bucket', canUseAggregation);
-    }
-    if (!canUseAggregation && comparingBucket) {
-      comparingBucket.error = '"Comparing" must be the last bucket aggregation!';
-    }
+    // Adds an error message if needed
+    if ($scope.aggForm.agg) $scope.aggForm.agg.$setValidity('bucket', canUseAggregation);
+    if (comparingBucket && !canUseAggregation) comparingBucket.error = errorMessage;
   }
 }
