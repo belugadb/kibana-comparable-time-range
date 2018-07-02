@@ -1,5 +1,6 @@
 import _ from 'lodash'; // TODO: refactor lodash dependencies
 import moment from 'moment';
+import dateMath from '@elastic/datemath';
 import { AggResponseTabifyComparingProvider } from './tabify_comparing';
 import { VisResponseHandlersRegistryProvider } from 'ui/registry/vis_response_handlers';
 import { ComparingProvider } from '../lib/comparing';
@@ -31,6 +32,29 @@ function ComparingResponseHandlerProvider(Private) {
     const momentDate = moment(date);
     if (!offset) return momentDate;
     return momentDate.clone().subtract(offset.value, offset.unit);
+  }
+
+  /**
+   * Creates a diff object ({value, unit}) for custom comparing time ranges
+   *
+   * @param {*} comparingRange
+   * @param {*} timeFilter
+   */
+  function getOffset(timeFilter, comparingRange) {
+    // If it's not using custom comparing, returns selected offset
+    const isCustom = comparingRange.comparing.display === 'Custom';
+    if (!isCustom) return comparingRange.comparing.offset;
+
+    // Gets `from` dates of both current date and comparing date
+    const currentDateFrom = timeFilter.getBounds().min;
+    const comparingFrom = dateMath.parse(comparingRange.custom.from);
+
+    // Gets diff in milliseconds
+    const diff = currentDateFrom.diff(comparingFrom);
+    return {
+      value: diff,
+      unit: 'milliseconds'
+    };
   }
 
   /**
@@ -103,7 +127,7 @@ function ComparingResponseHandlerProvider(Private) {
 
     // TODO: handle custom
     const comparingAggId = comparingAgg.id;
-    const comparingOffset = comparingAgg.params.range.comparing.offset;
+    const comparingOffset = getOffset(vis.API.timeFilter, comparingAgg.params.range);
 
     // Considering there's only one date_histogram agg
     //  TODO: Limit query to have only one date_histogram
