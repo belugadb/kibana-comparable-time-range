@@ -125,12 +125,10 @@ function ComparingResponseHandlerProvider(Private) {
   function handleDateHistogramResponse(vis, response, comparingAgg) {
     if (!vis.aggs.byTypeName.date_histogram) return response;
 
-    // TODO: handle custom
     const comparingAggId = comparingAgg.id;
     const comparingOffset = getOffset(vis.API.timeFilter, comparingAgg.params.range);
 
     // Considering there's only one date_histogram agg
-    //  TODO: Limit query to have only one date_histogram
     const dateHistogramAgg = vis.aggs.byTypeName.date_histogram[0];
 
     // TODO: implement a recursive function that finds nested date_histogram aggregations
