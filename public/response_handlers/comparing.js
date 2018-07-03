@@ -122,32 +122,22 @@ function ComparingResponseHandlerProvider(Private) {
     }
   }
 
-  function handleDateHistogramResponse(vis, response, comparingAgg) {
-    if (!vis.aggs.byTypeName.date_histogram) return response;
+  /**
+   * Builds comparing aggregation for responses containing date_histogram aggregations.
+   * Looks for `comparingAggId` recursively and returns a "comparing agg bucket"
+   *  using information from both `bucket` and `comparingBucket`
+   *
+   * @param {*} bucket
+   * @param {*} comparingBucket
+   * @param {*} comparingAggId
+   */
+  function getComparingFromDateHistogram(bucket, comparingBucket, comparingAggId) {
+    if (containsAgg(bucket, comparingAggId)) {
+      // If comparingBucket is missing, it means that there's no bucket
+      //  value in comparing range, so just returns bucket itself
+      if (!comparingBucket) return bucket;
 
-    const comparingAggId = comparingAgg.id;
-    const comparingOffset = getOffset(vis.API.timeFilter, comparingAgg.params.range);
-
-    // Considering there's only one date_histogram agg
-    const dateHistogramAgg = vis.aggs.byTypeName.date_histogram[0];
-
-    // TODO: implement a recursive function that finds nested date_histogram aggregations
-    //  This case will only work if date_histogram is the first one
-    const dateHistogramBuckets = response.aggregations[dateHistogramAgg.id].buckets;
-
-    // Extract the comparing values from sibbling buckets
-    const bucketsWithComparing = dateHistogramBuckets.map(bucket => {
-      // Gets comparing date to look for in sibbling buckets
-      const comparingBucketDate = getDate(bucket.key, comparingOffset);
-
-      // Finds comparingBucket using comparing date
-      const comparingBucket = dateHistogramBuckets.find(b => b.key === comparingBucketDate.valueOf());
-
-      // If no comparingBucket is found, discards the bucket itself
-      //  This is used later in order to filter out unwanted buckets
-      if (!comparingBucket) return null;
-
-      // Builds new comparing agg bucket based on comapring date range
+      // Builds new comparing agg bucket based on comparing date range
       //  from comparingBucket and base date range from bucket
       const newComparingBuckets = [
         comparingBucket[comparingAggId].buckets[0],
@@ -161,9 +151,50 @@ function ComparingResponseHandlerProvider(Private) {
           buckets: newComparingBuckets
         }
       };
+    } else {
+      // Finds next agg child (looks for buckets array inside every child)
+      const nextAggId = Object.keys(bucket).find(k => !!bucket[k].buckets);
+      const newBuckets = bucket[nextAggId].buckets.map(subBucket => {
+        const comparingSubBucket = comparingBucket && comparingBucket[nextAggId].buckets.find(b => b.key === subBucket.key);
+        return getComparingFromDateHistogram(subBucket, comparingSubBucket, comparingAggId);
+      });
+      return {
+        ...bucket,
+        [nextAggId]: {
+          ...bucket[nextAggId],
+          buckets: newBuckets
+        }
+      };
+    }
+  }
+
+  function handleDateHistogramResponse(vis, response, comparingAgg) {
+    if (!vis.aggs.byTypeName.date_histogram) return response;
+
+    const comparingAggId = comparingAgg.id;
+    const comparingOffset = getOffset(vis.API.timeFilter, comparingAgg.params.range);
+    const currentDateFilter = vis.API.timeFilter.getBounds();
+
+    // Considering there's only one date_histogram agg
+    const dateHistogramAgg = vis.aggs.byTypeName.date_histogram[0];
+
+    // This case will only work if date_histogram is the first one
+    //  TODO: implement a UI warning to make sure date_histogram is the first one when using comparing
+    const dateHistogramBuckets = response.aggregations[dateHistogramAgg.id].buckets;
+
+    // Extract the comparing values from sibbling buckets
+    const bucketsWithComparing = dateHistogramBuckets.map(bucket => {
+      // Gets comparing date to look for in sibbling buckets
+      const comparingBucketDate = getDate(bucket.key, comparingOffset);
+
+      // Finds comparingBucket using comparing date
+      const comparingBucket = dateHistogramBuckets.find(b => b.key === comparingBucketDate.valueOf());
+
+      return getComparingFromDateHistogram(bucket, comparingBucket, comparingAggId);
     })
-      // Filters out unwanted `null` buckets
-      .filter(b => !!b);
+      // Filters out unwanted out-of-bounds buckets.
+      //  This step is necessary since ES response contains both current and comparing range buckets
+      .filter(bucket => !!getDate(bucket.key).isBetween(currentDateFilter.min, currentDateFilter.max));
 
     return {
       ...response,
