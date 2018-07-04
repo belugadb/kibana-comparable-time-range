@@ -24,7 +24,7 @@ if (appId === 'kibana') {
             // Validations
             if (!table) return;
             const hasColumns = !!table.columns.length;
-            const isUsingComparing = table.rows[0] && !!table.rows[0].find(col => col.comparing);
+            const isUsingComparing = table.rows[0] && !!table.rows[0].find(col => col.hasOwnProperty('comparing'));
             const shouldApplyComparing = hasColumns && isUsingComparing;
             if (!shouldApplyComparing) return;
 
