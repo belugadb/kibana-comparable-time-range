@@ -1,11 +1,23 @@
 // This is a copy of ui/vis/request_handlers/courier
 //  with global time filter overwritten by comparing config
 import _ from 'lodash'; // TODO: refactor lodash dependencies
-import moment from 'moment';
 import dateMath from '@elastic/datemath';
 import { VisRequestHandlersRegistryProvider } from 'ui/registry/vis_request_handlers';
 
 const ComparingRequestHandlerProvider = function (Private, courier, timefilter) {
+
+  function buildDateRangeFilter(aggDateRanges, timeField) {
+    return  {
+      range: {
+        [timeField]: {
+          gte: dateMath.parse(aggDateRanges.from).toISOString(),
+          lte: dateMath.parse(aggDateRanges.to).toISOString(),
+          format: 'date_time'
+        }
+      }
+    };
+  }
+
   /**
    * Handles comparing agg, overriding global time filter if needed
    *
@@ -20,10 +32,6 @@ const ComparingRequestHandlerProvider = function (Private, courier, timefilter) 
     const comparingAgg = vis.aggs.byTypeName.comparing[0].toDsl();
     const timeField = comparingAgg.date_range.field;
     const aggDateRanges = comparingAgg.date_range.ranges;
-    const requestedDateRange = {
-      from: dateMath.parse(aggDateRanges[0].from),
-      to: dateMath.parse(aggDateRanges[1].to)
-    };
 
     // Creates a new time range filter
     //  `comparing` field will be used in RootSearchSource.filter decorator
@@ -31,12 +39,13 @@ const ComparingRequestHandlerProvider = function (Private, courier, timefilter) 
     currentFilter.push({
       comparing: true,
       query: {
-        range: {
-          [timeField]: {
-            gte: moment(requestedDateRange.from).toISOString(),
-            lte: moment(requestedDateRange.to).toISOString(),
-            format: 'date_time'
-          }
+        bool: {
+          should: [
+            // Comparing range
+            buildDateRangeFilter(aggDateRanges[0], timeField),
+            // Current global time filter range
+            buildDateRangeFilter(aggDateRanges[1], timeField)
+          ]
         }
       }
     });
