@@ -94,8 +94,7 @@ function handleDateHistogramResponse(vis, response, comparingAgg) {
   // Considering there's only one date_histogram agg
   const dateHistogramAgg = vis.aggs.byTypeName.date_histogram[0];
 
-  // This case will only work if date_histogram is the first one
-  //  TODO: implement a UI warning to make sure date_histogram is the first one when using comparing
+  // Considering date_histogram is the first bucket agg
   const dateHistogramBuckets = response.aggregations[dateHistogramAgg.id].buckets;
 
   // Extract the comparing values from sibbling buckets

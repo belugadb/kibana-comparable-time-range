@@ -2,8 +2,9 @@ import _ from 'lodash'; // TODO: refactor lodash dependencies
 import { handleCustomDate } from './lib/custom_date_handler';
 
 const VALIDATION_ERROR_MESSAGES = {
-  LAST_BUCKET: '"Comparing" must be the last bucket aggregation!',
-  MAX_DATE_RANGE: 'Only one date range aggregation is allowed when using "Comparing" aggregation'
+  LAST_BUCKET: '"Comparing" must be the last bucket aggregation',
+  DATE_HISTOGRAM_FIRST: 'Date Histogram bucket aggregation should be the first one when using "Comparing" bucket aggregation',
+  MAX_DATE_HISTOGRAM: 'Only one Date Histogram aggregation is allowed when using "Comparing" bucket aggregation'
 };
 
 export function comparingAggController($scope) {
@@ -49,16 +50,22 @@ export function comparingAggController($scope) {
     // Checks if comparing is last bucket
     const comparingBucket = getAggByType('comparing')[0];
     const lastBucket = _.findLast($scope.vis.getAggConfig(), agg => agg.schema.group === 'buckets');
-    const isLastBucket = comparingBucket && lastBucket && lastBucket.id === comparingBucket.id;
-    if (!isLastBucket) errorMessage = VALIDATION_ERROR_MESSAGES.LAST_BUCKET;
+    const isComparingLastBucket = comparingBucket && lastBucket && lastBucket.id === comparingBucket.id;
+    if (!isComparingLastBucket) errorMessage = VALIDATION_ERROR_MESSAGES.LAST_BUCKET;
+
+    // Checks if date_histogram is first bucket
+    const dateHistogramBuckets = getAggByType('date_histogram');
+    const dateHistogramBucket = dateHistogramBuckets[0];
+    const firstBucket = $scope.vis.getAggConfig().find(agg => agg.schema.group === 'buckets');
+    const isDateHistogramFirstBucket = dateHistogramBucket && firstBucket && firstBucket.id === dateHistogramBucket.id;
+    if (!isDateHistogramFirstBucket) errorMessage = VALIDATION_ERROR_MESSAGES.DATE_HISTOGRAM_FIRST;
 
     // Checks if only one date_histogram is used
-    const dateHistogramAggs = getAggByType('date_histogram');
-    const maxOneDateHistogram = dateHistogramAggs && dateHistogramAggs.length <= 1;
-    const isDateHistogramValid = dateHistogramAggs ? maxOneDateHistogram : true;
-    if (!isDateHistogramValid) errorMessage = VALIDATION_ERROR_MESSAGES.MAX_DATE_RANGE;
+    const maxOneDateHistogram = dateHistogramBuckets && dateHistogramBuckets.length <= 1;
+    const isDateHistogramValid = dateHistogramBuckets ? maxOneDateHistogram : true;
+    if (!isDateHistogramValid) errorMessage = VALIDATION_ERROR_MESSAGES.MAX_DATE_HISTOGRAM;
 
-    const canUseAggregation = isLastBucket && isDateHistogramValid;
+    const canUseAggregation = isComparingLastBucket && isDateHistogramFirstBucket && isDateHistogramValid;
 
     // Removes error from comparing bucket
     if (comparingBucket.error) delete comparingBucket.error;
