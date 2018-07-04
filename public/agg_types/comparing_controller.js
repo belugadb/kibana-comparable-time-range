@@ -50,22 +50,22 @@ export function comparingAggController($scope) {
     // Checks if comparing is last bucket
     const comparingBucket = getAggByType('comparing')[0];
     const lastBucket = _.findLast($scope.vis.getAggConfig(), agg => agg.schema.group === 'buckets');
-    const isComparingLastBucket = comparingBucket && lastBucket && lastBucket.id === comparingBucket.id;
-    if (!isComparingLastBucket) errorMessage = VALIDATION_ERROR_MESSAGES.LAST_BUCKET;
+    const isComparingOrderValid = comparingBucket && lastBucket && lastBucket.id === comparingBucket.id;
+    if (!isComparingOrderValid) errorMessage = VALIDATION_ERROR_MESSAGES.LAST_BUCKET;
 
     // Checks if date_histogram is first bucket
     const dateHistogramBuckets = getAggByType('date_histogram');
     const dateHistogramBucket = dateHistogramBuckets[0];
     const firstBucket = $scope.vis.getAggConfig().find(agg => agg.schema.group === 'buckets');
-    const isDateHistogramFirstBucket = dateHistogramBucket && firstBucket && firstBucket.id === dateHistogramBucket.id;
-    if (!isDateHistogramFirstBucket) errorMessage = VALIDATION_ERROR_MESSAGES.DATE_HISTOGRAM_FIRST;
+    const isDateHistogramOrderValid = dateHistogramBucket ? firstBucket && firstBucket.id === dateHistogramBucket.id : true;
+    if (!isDateHistogramOrderValid) errorMessage = VALIDATION_ERROR_MESSAGES.DATE_HISTOGRAM_FIRST;
 
     // Checks if only one date_histogram is used
     const maxOneDateHistogram = dateHistogramBuckets && dateHistogramBuckets.length <= 1;
-    const isDateHistogramValid = dateHistogramBuckets ? maxOneDateHistogram : true;
-    if (!isDateHistogramValid) errorMessage = VALIDATION_ERROR_MESSAGES.MAX_DATE_HISTOGRAM;
+    const isDateHistogramCountValid = dateHistogramBuckets ? maxOneDateHistogram : true;
+    if (!isDateHistogramCountValid) errorMessage = VALIDATION_ERROR_MESSAGES.MAX_DATE_HISTOGRAM;
 
-    const canUseAggregation = isComparingLastBucket && isDateHistogramFirstBucket && isDateHistogramValid;
+    const canUseAggregation = isComparingOrderValid && isDateHistogramOrderValid && isDateHistogramCountValid;
 
     // Removes error from comparing bucket
     if (comparingBucket.error) delete comparingBucket.error;
