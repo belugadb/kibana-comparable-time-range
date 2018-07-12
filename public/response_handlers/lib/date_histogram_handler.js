@@ -109,7 +109,8 @@ function handleDateHistogramResponse(vis, response, comparingAgg) {
   })
     // Filters out unwanted out-of-bounds buckets.
     //  This step is necessary since ES response contains both current and comparing range buckets
-    .filter(bucket => !!getDate(bucket.key).isBetween(currentDateFilter.min, currentDateFilter.max));
+    //  Moment's isBetween last parameter ('[)') sets range inclusivity. See https://momentjs.com/docs/#/query/is-between/
+    .filter(bucket => !!getDate(bucket.key).isBetween(currentDateFilter.min, currentDateFilter.max, null, '[)'));
 
   return {
     ...response,
