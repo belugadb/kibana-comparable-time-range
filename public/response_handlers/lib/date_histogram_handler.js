@@ -78,6 +78,20 @@ function getComparingFromDateHistogram(bucket, comparingBucket, comparingAggId) 
 }
 
 /**
+ * Checks if bucket current value is not empty (`doc_count: 0`).
+ * Looks recursively for the current date range value ([1]) of `comparingAggId` buckets
+ *
+ * @param {*} bucket
+ * @param {*} comparingAggId
+ */
+function isBucketValueEmpty(bucket, comparingAggId) {
+  if (containsAgg(bucket, comparingAggId)) return !bucket[comparingAggId].buckets[1].doc_count;
+  // if comparingAggId is not found, calls itself recursively, looking for next aggregation
+  const nextAggId = Object.keys(bucket).find(k => !!bucket[k].buckets);
+  return !!bucket[nextAggId].buckets.find(subBucket => isBucketValueEmpty(subBucket, comparingAggId));
+}
+
+/**
  * Handles date_histogram in response.aggregations
  *
  * @param {*} vis
@@ -93,6 +107,7 @@ function handleDateHistogramResponse(vis, response, comparingAgg) {
 
   // Considering there's only one date_histogram agg
   const dateHistogramAgg = vis.aggs.byTypeName.date_histogram[0];
+  const dateHistogramIntervalUnit = dateHistogramAgg.params.interval.val;
 
   // Considering date_histogram is the first bucket agg
   const dateHistogramBuckets = response.aggregations[dateHistogramAgg.id].buckets;
@@ -109,8 +124,20 @@ function handleDateHistogramResponse(vis, response, comparingAgg) {
   })
     // Filters out unwanted out-of-bounds buckets.
     //  This step is necessary since ES response contains both current and comparing range buckets
-    //  Moment's isBetween last parameter ('[)') sets range inclusivity. See https://momentjs.com/docs/#/query/is-between/
-    .filter(bucket => !!getDate(bucket.key).isBetween(currentDateFilter.min, currentDateFilter.max, null, '[)'));
+    .filter(bucket => {
+      const bucketBounds = {
+        from: getDate(bucket.key),
+        to: getDate(bucket.key).clone().add(1, dateHistogramIntervalUnit)
+      };
+      // Moment's isBetween last parameter ('[)') sets range inclusivity. See https://momentjs.com/docs/#/query/is-between/
+      const isBucketInDateFilter = !!bucketBounds.from.isBetween(currentDateFilter.min, currentDateFilter.max, null, '[)');
+      const bucketContainsDateFilterFrom = currentDateFilter.min.isBetween(bucketBounds.from, bucketBounds.to, null, '[)');
+
+      // Also filters out `0` values from ES response
+      const isBucketValueValid = !isBucketValueEmpty(bucket, comparingAggId);
+
+      return (isBucketInDateFilter || bucketContainsDateFilterFrom) && isBucketValueValid;
+    });
 
   return {
     ...response,
