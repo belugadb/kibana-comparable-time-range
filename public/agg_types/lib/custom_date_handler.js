@@ -1,5 +1,5 @@
 import moment from 'moment';
-import dateMath from '@elastic/datemath';
+import dateMath from '@kbn/datemath';
 
 /**
  * Rounds up `customComparing.to` to the end of the day if needed.

@@ -1,7 +1,7 @@
 // This is a copy of ui/vis/request_handlers/courier
 //  with global time filter overwritten by comparing config
 import _ from 'lodash'; // TODO: refactor lodash dependencies
-import dateMath from '@elastic/datemath';
+import dateMath from '@kbn/datemath';
 import { VisRequestHandlersRegistryProvider } from 'ui/registry/vis_request_handlers';
 
 const ComparingRequestHandlerProvider = function (Private, courier, timefilter) {

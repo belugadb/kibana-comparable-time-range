@@ -1,5 +1,5 @@
 import moment from 'moment';
-import dateMath from '@elastic/datemath';
+import dateMath from '@kbn/datemath';
 import { containsAgg } from './utils';
 
 function getDate(date, offset) {
