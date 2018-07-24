@@ -1,13 +1,12 @@
 import { AggTypesIndexProvider } from 'ui/agg_types';
 import { AggTypesBucketsComparingProvider } from '../agg_types/comparing';
-import { VisAggConfigProvider } from 'ui/vis/agg_config';
+import { AggConfig } from 'ui/vis/agg_config';
 import { AggTypesMetricsMetricAggTypeProvider } from 'ui/agg_types/metrics/metric_agg_type';
 import { AggTypesMetricsCountProvider } from 'ui/agg_types/metrics/count';
 
 export function decorateAggTypes(Private) {
   const AggTypes = Private(AggTypesIndexProvider);
   const AggComparing = Private(AggTypesBucketsComparingProvider);
-  const AggConfig = Private(VisAggConfigProvider);
   const MetricAggType = Private(AggTypesMetricsMetricAggTypeProvider);
   const CountAggType = Private(AggTypesMetricsCountProvider);
 

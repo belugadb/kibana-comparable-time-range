@@ -1,5 +1,5 @@
 import { VisTypesRegistryProvider } from 'ui/registry/vis_types';
-import { VisSchemasProvider } from 'ui/vis/editors/default/schemas';
+import { Schemas } from 'ui/vis/editors/default/schemas';
 
 const ALLOWED_VIS_TYPES = ['table'];
 
@@ -36,7 +36,6 @@ function getAggFilter(aggFilter) {
 
 export function decorateVis(Private) {
   const VisTypes = Private(VisTypesRegistryProvider);
-  const Schemas = Private(VisSchemasProvider);
 
   VisTypes.forEach(vis => {
     if (vis.editorConfig && vis.editorConfig.schemas) {
