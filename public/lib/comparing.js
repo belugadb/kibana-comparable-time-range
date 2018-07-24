@@ -1,7 +1,7 @@
-import { RegistryFieldFormatsProvider } from 'ui/registry/field_formats';
+import { fieldFormats } from 'ui/registry/field_formats';
 
+// TODO: remove Provider, export function instead
 export function ComparingProvider(Private) {
-  const fieldFormats = Private(RegistryFieldFormatsProvider);
   const percentFormatter = fieldFormats.getInstance('percent').getConverterFor('text');
   const numberFormatter = fieldFormats.getDefaultInstance('number').getConverterFor('text');
 

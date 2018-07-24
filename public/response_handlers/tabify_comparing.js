@@ -2,16 +2,11 @@
 // with a comparing handler in collectBucket function
 
 import _ from 'lodash'; // TODO: refactor lodash dependencies
-import { TabbedAggResponseWriterProvider } from 'ui/agg_response/tabify/_response_writer';
-import { AggResponseBucketsProvider } from 'ui/agg_response/tabify/_buckets';
+import { TabbedAggResponseWriter } from 'ui/agg_response/tabify/_response_writer';
+import { TabifyBuckets } from 'ui/agg_response/tabify/_buckets';
 
-export function AggResponseTabifyComparingProvider(Private, Notifier) {
-  const TabbedAggResponseWriter = Private(TabbedAggResponseWriterProvider);
-  const Buckets = Private(AggResponseBucketsProvider);
-  const notify = new Notifier({ location: 'agg_response/tabify' });
-
-  function tabifyAggResponse(vis, esResponse, respOpts) {
-    const write = new TabbedAggResponseWriter(vis, respOpts);
+export function tabifyComparingAggResponse(aggs, esResponse, respOpts = {}) {
+  const write = new TabbedAggResponseWriter(aggs, respOpts);
 
     const topLevelBucket = _.assign({}, esResponse.aggregations, {
       doc_count: esResponse.hits.total
@@ -38,7 +33,7 @@ export function AggResponseTabifyComparingProvider(Private, Notifier) {
 
     switch (agg.schema.group) {
       case 'buckets':
-        const buckets = new Buckets(bucket[agg.id], agg.params);
+      const buckets = new TabifyBuckets(bucket[agg.id], agg.params);
         if (buckets.length) {
           const splitting = write.canSplit && agg.schema.name === 'split';
           if (splitting) {
@@ -49,7 +44,7 @@ export function AggResponseTabifyComparingProvider(Private, Notifier) {
             buckets.forEach(function (subBucket, key) {
               write.cell(agg, agg.getKey(subBucket, key), function () {
                 collectBucket(write, subBucket, agg.getKey(subBucket, key), aggScale);
-              });
+            }, subBucket.filters);
             });
           }
         } else if (write.partialRows && write.metricsForAllBuckets && write.minimalColumns) {
@@ -112,5 +107,3 @@ export function AggResponseTabifyComparingProvider(Private, Notifier) {
     write.aggStack.unshift(agg);
   }
 
-  return notify.timed('tabify agg response', tabifyAggResponse);
-}

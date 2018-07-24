@@ -1,12 +1,11 @@
 import _ from 'lodash'; // TODO: refactor lodash dependencies
-import { AggResponseTabifyComparingProvider } from './tabify_comparing';
+import { tabifyComparingAggResponse } from './tabify_comparing';
 import { VisResponseHandlersRegistryProvider } from 'ui/registry/vis_response_handlers';
 import { ComparingProvider } from '../lib/comparing';
 import { handleDateHistogramResponse } from './lib/date_histogram_handler';
 import { containsAgg } from './lib/utils';
 
 function ComparingResponseHandlerProvider(Private) {
-  const tabifyComparing = Private(AggResponseTabifyComparingProvider);
   const getDifference = Private(ComparingProvider);
 
   function getBucketValues(buckets, aggId) {
@@ -157,7 +156,7 @@ function ComparingResponseHandlerProvider(Private) {
         const newResponse = handleComparingResponse(vis, response);
         const newVis = handleVis(vis);
 
-        const tableGroup = tabifyComparing(newVis, newResponse, {
+        const tableGroup = tabifyComparingAggResponse(newVis, newResponse, {
           canSplit: true,
           asAggConfigResults: _.get(newVis, 'type.responseHandlerConfig.asAggConfigResults', false)
         });
