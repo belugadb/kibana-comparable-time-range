@@ -19,7 +19,9 @@ const ComparingRequestHandlerProvider = function (Private, courier, timefilter) 
   }
 
   /**
-   * Handles comparing agg, overriding global time filter if needed
+   * Handles comparing agg:
+   * - overrides global time filter if needed
+   * - changes `min_doc_count` and `extended_bounds` of `date_histogram` aggregation
    *
    * @param {*} vis
    * @param {*} searchSource
@@ -32,6 +34,20 @@ const ComparingRequestHandlerProvider = function (Private, courier, timefilter) 
     const comparingAgg = vis.aggs.byTypeName.comparing[0].toDsl();
     const timeField = comparingAgg.date_range.field;
     const aggDateRanges = comparingAgg.date_range.ranges;
+
+    // Changes `min_doc_count` and `extended_bounds` from `date_histogram` aggregation
+    //  This ensures that the current time bucket will be considered, even with empty values (0)
+    if (vis.aggs.byTypeName.date_histogram) {
+      const dateHistogramAgg = vis.aggs.byTypeName.date_histogram[0];
+      dateHistogramAgg.params = {
+        ...dateHistogramAgg.params,
+        min_doc_count: 0,
+        extended_bounds: {
+          min: aggDateRanges[0].from,
+          max: aggDateRanges[1].to
+        }
+      };
+    }
 
     // Creates a new time range filter
     //  `comparing` field will be used in RootSearchSource.filter decorator
@@ -56,6 +72,7 @@ const ComparingRequestHandlerProvider = function (Private, courier, timefilter) 
    * Removes time range filter added by `handleComparing` function.
    * This function should be called after the ES request happens.
    * This approach is used in order to avoid keeping injected filter in appState!
+   * Also changes `min_doc_count` and `extended_bounds` of `date_histogram` aggregation back to its default values
    *
    * @param {*} vis
    * @param {*} searchSource
@@ -63,6 +80,12 @@ const ComparingRequestHandlerProvider = function (Private, courier, timefilter) 
   function removeComparingFilter(vis, searchSource) {
     const isUsingComparing = !!vis.aggs.byTypeName.comparing;
     if (!isUsingComparing) return;
+
+    // Resets date_histogram params values
+    if (vis.aggs.byTypeName.date_histogram) {
+      vis.aggs.byTypeName.date_histogram[0].params.min_doc_count = 1;
+      vis.aggs.byTypeName.date_histogram[0].params.extended_bounds = {};
+    }
 
     // Removes comparing time range filter
     const currentFilter = [ ...searchSource.get('filter') ];

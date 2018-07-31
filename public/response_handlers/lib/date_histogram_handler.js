@@ -78,14 +78,16 @@ function getComparingFromDateHistogram(bucket, comparingBucket, comparingAggId) 
 }
 
 /**
- * Checks if bucket current value is not empty (`doc_count: 0`).
- * Looks recursively for the current date range value ([1]) of `comparingAggId` buckets
+ * Checks if bucket values are not empty (`doc_count: 0`).
+ * Looks recursively for the `comparingAggId` bucket
  *
  * @param {*} bucket
  * @param {*} comparingAggId
  */
 function isBucketValueEmpty(bucket, comparingAggId) {
-  if (containsAgg(bucket, comparingAggId)) return !bucket[comparingAggId].buckets[1].doc_count;
+  if (containsAgg(bucket, comparingAggId)) {
+    return !bucket[comparingAggId].buckets[0].doc_count && !bucket[comparingAggId].buckets[1].doc_count;
+  }
   // if comparingAggId is not found, calls itself recursively, looking for next aggregation
   const nextAggId = Object.keys(bucket).find(k => !!bucket[k].buckets);
   return !!bucket[nextAggId].buckets.find(subBucket => isBucketValueEmpty(subBucket, comparingAggId));
