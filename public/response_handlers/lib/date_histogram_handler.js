@@ -86,6 +86,7 @@ function getComparingFromDateHistogram(bucket, comparingBucket, comparingAggId) 
  */
 function isBucketValueEmpty(bucket, comparingAggId) {
   if (containsAgg(bucket, comparingAggId)) {
+    // Checks `doc_count` from both current (buckets[1]) and comparing (buckets[0]) date ranges
     return !bucket[comparingAggId].buckets[0].doc_count && !bucket[comparingAggId].buckets[1].doc_count;
   }
   // if comparingAggId is not found, calls itself recursively, looking for next aggregation
