@@ -4,6 +4,7 @@ import { decorateAggTypes } from './decorators/agg_types';
 import { decorateRootSearchSource } from './decorators/root_search_source';
 import { decorateTabbedAggResponseWriterProvider } from './decorators/response_writer';
 import { decorateVis } from './decorators/vis';
+import { decorateAggConfigs } from './decorators/agg_configs';
 import { decorateAggConfigResult } from './decorators/agg_config_result';
 import './decorators/agg_table';
 import './decorators/paginated_table';
@@ -22,6 +23,7 @@ if (appId === 'kibana') {
       decorateRootSearchSource(Private);
       decorateTabbedAggResponseWriterProvider(Private);
       decorateVis(Private);
+      decorateAggConfigs(Private);
       decorateAggConfigResult();
     });
 }
