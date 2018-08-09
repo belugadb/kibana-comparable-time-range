@@ -72,21 +72,23 @@ function ComparingResponseHandlerProvider(Private) {
    * @returns {Object} Returns aggregations without comparingAgg (in the response.aggregations format)
    */
   function findComparingAgg(aggs, comparingAggId, metricsAggsIds, isPercentage) {
-    // If the current agg level contains comparingAggId, formats agg and returns
-    if (containsAgg(aggs, comparingAggId)) {
-      return applyComparing(aggs, comparingAggId, metricsAggsIds, isPercentage);
-    } else { // calls itself recursively for every bucket
-      // Finds next agg child (looks for buckets array inside every child)
-      const nextAggId = Object.keys(aggs).find(k => !!aggs[k].buckets);
-      const newBuckets = aggs[nextAggId].buckets.map(b => findComparingAgg(b, comparingAggId, metricsAggsIds, isPercentage));
-      return {
-        ...aggs,
-        [nextAggId]: {
-          ...aggs[nextAggId],
-          buckets: newBuckets
-        }
-      };
-    }
+    // If the current agg level contains comparingAggId, formats agg
+    const formattedAggs = containsAgg(aggs, comparingAggId)
+      ? applyComparing(aggs, comparingAggId, metricsAggsIds, isPercentage)
+      : aggs;
+    // Finds next agg child (looks for buckets array inside every child)
+    //  (if not found, it's the last bucket, then returns `formattedAggs` itself)
+    const nextAggId = Object.keys(formattedAggs).find(k => !!formattedAggs[k].buckets);
+    if(!nextAggId) return formattedAggs;
+    // Calls itself recursively for every bucket
+    const newBuckets = formattedAggs[nextAggId].buckets.map(b => findComparingAgg(b, comparingAggId, metricsAggsIds, isPercentage));
+    return {
+      ...formattedAggs,
+      [nextAggId]: {
+        ...formattedAggs[nextAggId],
+        buckets: newBuckets
+      }
+    };
   }
 
   function handleComparingResponse(vis, response) {
