@@ -32,6 +32,29 @@ function getOffset(timeFilter, comparingRange) {
 }
 
 /**
+ * Builds new comparing agg bucket based on comparing date range
+ *  from `comparingBucket` and base date range from `bucket`
+ *
+ * @param {*} bucket
+ * @param {*} comparingBucket
+ * @param {*} comparingAggId
+ */
+function buildComparingBucket(bucket, comparingBucket, comparingAggId) {
+  const newComparingBuckets = [
+    comparingBucket[comparingAggId].buckets[0],
+    bucket[comparingAggId].buckets[1]
+  ];
+
+  return {
+    ...bucket,
+    [comparingAggId]: {
+      ...bucket[comparingAggId],
+      buckets: newComparingBuckets
+    }
+  };
+}
+
+/**
  * Builds comparing aggregation for responses containing date_histogram aggregations.
  * Looks for `comparingAggId` recursively and returns a "comparing agg bucket"
  *  using information from both `bucket` and `comparingBucket`
@@ -41,40 +64,30 @@ function getOffset(timeFilter, comparingRange) {
  * @param {*} comparingAggId
  */
 function getComparingFromDateHistogram(bucket, comparingBucket, comparingAggId) {
-  if (containsAgg(bucket, comparingAggId)) {
-    // If comparingBucket is missing, it means that there's no bucket
-    //  value in comparing range, so just returns bucket itself
-    if (!comparingBucket) return bucket;
-
-    // Builds new comparing agg bucket based on comparing date range
-    //  from comparingBucket and base date range from bucket
-    const newComparingBuckets = [
-      comparingBucket[comparingAggId].buckets[0],
-      bucket[comparingAggId].buckets[1]
-    ];
-
-    return {
-      ...bucket,
-      [comparingAggId]: {
-        ...bucket[comparingAggId],
-        buckets: newComparingBuckets
-      }
-    };
-  } else {
-    // Finds next agg child (looks for buckets array inside every child)
-    const nextAggId = Object.keys(bucket).find(k => !!bucket[k].buckets);
-    const newBuckets = bucket[nextAggId].buckets.map(subBucket => {
-      const comparingSubBucket = comparingBucket && comparingBucket[nextAggId].buckets.find(b => b.key === subBucket.key);
-      return getComparingFromDateHistogram(subBucket, comparingSubBucket, comparingAggId);
-    });
-    return {
-      ...bucket,
-      [nextAggId]: {
-        ...bucket[nextAggId],
-        buckets: newBuckets
-      }
-    };
-  }
+  // If comparingBucket is missing, it means that there's no bucket
+  //  value in comparing range, so just returns bucket itself
+  if (!comparingBucket) return bucket;
+  // If the current bucket level contains comparingAggId, formats bucket
+  const formattedBucket = containsAgg(bucket, comparingAggId)
+    ? buildComparingBucket(bucket, comparingBucket, comparingAggId)
+    : bucket;
+  // Finds next bucket child (looks for buckets array inside every child)
+  //  (if not found, it's the last bucket, then returns `formattedBucket` itself)
+  const nextAggId = Object.keys(formattedBucket).find(k => !!formattedBucket[k].buckets && k !== comparingAggId);
+  if(!nextAggId) return formattedBucket;
+  // Calls itself recursively for every bucket
+  const newBuckets = formattedBucket[nextAggId].buckets.map(subBucket => {
+    // Gets next level from comparingBucket
+    const comparingSubBucket = comparingBucket[nextAggId].buckets.find(b => b.key === subBucket.key);
+    return getComparingFromDateHistogram(subBucket, comparingSubBucket, comparingAggId);
+  });
+  return {
+    ...formattedBucket,
+    [nextAggId]: {
+      ...formattedBucket[nextAggId],
+      buckets: newBuckets
+    }
+  };
 }
 
 /**
@@ -90,7 +103,7 @@ function isBucketValueEmpty(bucket, comparingAggId) {
     return !bucket[comparingAggId].buckets[0].doc_count && !bucket[comparingAggId].buckets[1].doc_count;
   }
   // if comparingAggId is not found, calls itself recursively, looking for next aggregation
-  const nextAggId = Object.keys(bucket).find(k => !!bucket[k].buckets);
+  const nextAggId = Object.keys(bucket).find(k => !!bucket[k].buckets && k !== comparingAggId);
   return !!bucket[nextAggId].buckets.find(subBucket => isBucketValueEmpty(subBucket, comparingAggId));
 }
 
