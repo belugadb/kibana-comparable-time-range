@@ -79,7 +79,7 @@ function ComparingResponseHandlerProvider(Private) {
     // Finds next agg child (looks for buckets array inside every child)
     //  (if not found, it's the last bucket, then returns `formattedAggs` itself)
     const nextAggId = Object.keys(formattedAggs).find(k => !!formattedAggs[k].buckets);
-    if(!nextAggId) return formattedAggs;
+    if (!nextAggId) return formattedAggs;
     // Calls itself recursively for every bucket
     const newBuckets = formattedAggs[nextAggId].buckets.map(b => findComparingAgg(b, comparingAggId, metricsAggsIds, isPercentage));
     return {
