@@ -35,7 +35,7 @@ export function decorateAggConfigs(Private) {
       // If currentDsl has aggreagations, applies comparing dsl
       //  (last buckets don't accept sub-aggs)
       if (currentDsl.aggs && !isLastBucket) {
-        // Calls itself recusrively for child aggs
+        // Calls itself recursively for child aggs
         currentDsl.aggs = applyComparingDsl(currentDsl.aggs, comparingAgg, nestedMetrics);
         // Adds comparingAgg dsl + nestedMetrics dsls
         currentDsl.aggs[comparingAgg.id] = {
