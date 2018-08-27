@@ -34,7 +34,7 @@ export function decorateAggConfigs(Private) {
       const isLastBucket = currentDsl.aggs && !Object.keys(currentDsl.aggs).find(k => currentDsl.aggs[k].aggs);
       // If currentDsl has aggreagations, applies comparing dsl
       //  (last buckets don't accept sub-aggs)
-      if(currentDsl.aggs && !isLastBucket) {
+      if (currentDsl.aggs && !isLastBucket) {
         // Calls itself recusrively for child aggs
         currentDsl.aggs = applyComparingDsl(currentDsl.aggs, comparingAgg, nestedMetrics);
         // Adds comparingAgg dsl + nestedMetrics dsls
@@ -54,7 +54,7 @@ export function decorateAggConfigs(Private) {
   function handleHierarchicalVisComparing(dsl, vis) {
     // Returns default dsl if vis isn't hierarchical
     const isUsingComparing = !!vis.aggs.byTypeName.comparing;
-    if(!isUsingComparing || isUsingComparing && !vis.isHierarchical()) return dsl;
+    if (!isUsingComparing || isUsingComparing && !vis.isHierarchical()) return dsl;
 
     const comparingAgg = vis.aggs.byTypeName.comparing[0];
 

@@ -7,3 +7,6 @@ settings:
       rootPackageName: 'comparable_time_range'
 globals:
   angular: false
+
+rules:
+  keyword-spacing: error

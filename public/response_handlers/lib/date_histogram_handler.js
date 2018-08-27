@@ -74,7 +74,7 @@ function getComparingFromDateHistogram(bucket, comparingBucket, comparingAggId) 
   // Finds next bucket child (looks for buckets array inside every child)
   //  (if not found, it's the last bucket, then returns `formattedBucket` itself)
   const nextAggId = Object.keys(formattedBucket).find(k => !!formattedBucket[k].buckets && k !== comparingAggId);
-  if(!nextAggId) return formattedBucket;
+  if (!nextAggId) return formattedBucket;
   // Calls itself recursively for every bucket
   const newBuckets = formattedBucket[nextAggId].buckets.map(subBucket => {
     // Gets next level from comparingBucket
