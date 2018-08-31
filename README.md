@@ -10,7 +10,7 @@
 This plugin is currently under development and it has been tested in Kibana `6.1.1` version only.
 To install, run this command from your Kibana project folder:
 ```
-./bin/kibana-plugin install https://github.com/belugadb/kibana-comparable-time-range/releases/download/v0.0.2/comparable_time_range-0.0.2.zip
+./bin/kibana-plugin install https://github.com/belugadb/kibana-comparable-time-range/releases/download/v0.0.3/comparable_time_range-0.0.3.zip
 ```
 
 You can also install previous versions of this plugin. Check the [repository releases](https://github.com/belugadb/kibana-comparable-time-range/releases).
