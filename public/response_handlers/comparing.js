@@ -156,9 +156,10 @@ function ComparingResponseHandlerProvider(Private) {
         const newResponse = handleComparingResponse(vis, response);
         const newVis = handleVis(vis);
 
-        const tableGroup = tabifyComparingAggResponse(newVis, newResponse, {
+        const tableGroup = tabifyComparingAggResponse(newVis.getAggConfig(), newResponse, {
           canSplit: true,
-          asAggConfigResults: _.get(newVis, 'type.responseHandlerConfig.asAggConfigResults', false)
+          asAggConfigResults: _.get(newVis, 'type.responseHandlerConfig.asAggConfigResults', false),
+          isHierarchical: newVis.isHierarchical()
         });
 
         resolve(tableGroup);

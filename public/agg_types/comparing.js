@@ -2,7 +2,7 @@ import moment from 'moment';
 import { jstz as tzDetect } from 'jstimezonedetect';
 import 'ui/directives/validate_date_math';
 import 'ui/directives/documentation_href';
-import { AggTypesBucketsBucketAggTypeProvider } from 'ui/agg_types/buckets/_bucket_agg_type';
+import * as BucketAggTypeProv from 'ui/agg_types/buckets/_bucket_agg_type';
 import comparingAggTemplate from './comparing.html';
 import { comparingAggController } from './comparing_controller';
 import { handleCustomDate } from './lib/custom_date_handler';
@@ -38,7 +38,7 @@ function getDate(date, offset) {
 }
 
 export function AggTypesBucketsComparingProvider(config, Private) {
-  const BucketAggType = Private(AggTypesBucketsBucketAggTypeProvider);
+  const BucketAggType = BucketAggTypeProv.BucketAggType || Private(BucketAggTypeProv.AggTypesBucketsBucketAggTypeProvider);
 
   const detectedTimezone = tzDetect.determine().name();
   const tzOffset = moment().format('Z');

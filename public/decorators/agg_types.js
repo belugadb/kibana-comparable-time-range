@@ -1,14 +1,14 @@
-import { AggTypesIndexProvider } from 'ui/agg_types';
-import { AggTypesBucketsComparingProvider } from '../agg_types/comparing';
 import { AggConfig } from 'ui/vis/agg_config';
-import { AggTypesMetricsMetricAggTypeProvider } from 'ui/agg_types/metrics/metric_agg_type';
-import { AggTypesMetricsCountProvider } from 'ui/agg_types/metrics/count';
+import * as AggTypesProv from 'ui/agg_types';
+import * as MetricAggTypeProv from 'ui/agg_types/metrics/metric_agg_type';
+import * as countMetricAggProv from 'ui/agg_types/metrics/count';
+import { AggTypesBucketsComparingProvider } from '../agg_types/comparing';
 
 export function decorateAggTypes(Private) {
-  const AggTypes = Private(AggTypesIndexProvider);
   const AggComparing = Private(AggTypesBucketsComparingProvider);
-  const MetricAggType = Private(AggTypesMetricsMetricAggTypeProvider);
-  const CountAggType = Private(AggTypesMetricsCountProvider);
+  const MetricAggType = MetricAggTypeProv.MetricAggType || Private(MetricAggTypeProv.AggTypesMetricsMetricAggTypeProvider);
+  const CountAggType = countMetricAggProv.countMetricAgg || Private(countMetricAggProv.AggTypesMetricsCountProvider);
+  const AggTypes = AggTypesProv.aggTypes || Private(AggTypesProv.AggTypesIndexProvider);
 
   // Adds getComparing and getDifference functions in AggConfig/MetricAggType/CountAggType
   AggConfig.prototype.getComparing = function (bucket) {
