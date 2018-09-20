@@ -64,10 +64,9 @@ export function decorateVis(Private) {
         });
         vis.editorConfig.schemas = new Schemas(schemas);
 
-        // Modifies the default request and response handlers of the vis.
-        //  It will look for a 'comparing' type in registered lists
-        //  of both request and response handlers
-        vis.requestHandler = 'comparing';
+        // Modifies the default response handler of the vis.
+        //  It will look for a 'comparing' type in
+        //  registered list of response handlers
         vis.responseHandler = 'comparing';
       }
     }
