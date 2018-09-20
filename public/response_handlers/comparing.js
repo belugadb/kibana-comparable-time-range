@@ -1,4 +1,6 @@
 import _ from 'lodash'; // TODO: refactor lodash dependencies
+import { VisProvider } from 'ui/vis/vis';
+import { PersistedState } from 'ui/persisted_state';
 import { tabifyComparingAggResponse } from './tabify_comparing';
 import { VisResponseHandlersRegistryProvider } from 'ui/registry/vis_response_handlers';
 import { ComparingProvider } from '../lib/comparing';
@@ -6,6 +8,7 @@ import { handleDateHistogramResponse } from './lib/date_histogram_handler';
 import { containsAgg } from './lib/utils';
 
 function ComparingResponseHandlerProvider(Private) {
+  const Vis = Private(VisProvider);
   const getDifference = Private(ComparingProvider);
 
   function getBucketValues(buckets, aggId) {
@@ -125,6 +128,20 @@ function ComparingResponseHandlerProvider(Private) {
     };
   }
 
+  /**
+   * Clones a vis object.
+   * This should be removed once https://github.com/elastic/kibana/issues/23278 is fixed.
+   *
+   * @param {*} vis
+   */
+  function cloneVis(vis) {
+    const uiJson = vis.hasUiState() ? vis.getUiState().toJSON() : {};
+    const uiState = new PersistedState(uiJson);
+    const clonedVis = new Vis(vis.indexPattern, vis.getState(), uiState);
+    clonedVis.editorMode = vis.editorMode;
+    return clonedVis;
+  }
+
   // TODO: instead of removing comparing agg from vis, handle it in tabify
   function handleVis(vis) {
     if (!vis.aggs.byTypeName.comparing) return vis;
@@ -132,7 +149,7 @@ function ComparingResponseHandlerProvider(Private) {
 
     // Clones vis in order to keep comparing agg in visualization buckets
     //  This keeps original vis instance unchanged
-    const newVis = vis.clone();
+    const newVis = cloneVis(vis) // vis.clone();
     // Removes comparing agg from clone (to be used in tabify)
     newVis.aggs.remove(agg => agg.id === comparingAggId);
 
