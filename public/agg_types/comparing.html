@@ -4,11 +4,12 @@
         <td class="comparing-form-table__field">
             <label for="visEditorDateRangeComparing{{agg.id}}">
               Comparing
-              <kbn-info
+              <icon-tip
                 ng-show="hasDifferentRanges()"
-                placement="right"
+                type="'alert'"
+                position="'right'"
                 class="text-warning"
-                info="Comparing data time range length is different from the current data">
+                content="'Comparing data time range length is different from the current data'">
               </kbn-info>
             </label>
             <select
