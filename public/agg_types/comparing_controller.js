@@ -40,7 +40,7 @@ export function comparingAggController($scope) {
   // `vis.getAggConfig()` is used because `vis.aggs.byTypeName`
   //  is wrongly mapping `undefined` type for new aggregations
   function getAggByType(type) {
-    return $scope.vis.getAggConfig().filter(agg => agg.type && agg.type.name === type);
+    return $scope.state.aggs.filter(agg => agg.type && agg.type.name === type);
   }
 
   $scope.$watch('responseValueAggs', checkBuckets);
@@ -49,14 +49,14 @@ export function comparingAggController($scope) {
 
     // Checks if comparing is last bucket
     const comparingBucket = getAggByType('comparing')[0];
-    const lastBucket = _.findLast($scope.vis.getAggConfig(), agg => agg.schema.group === 'buckets');
+    const lastBucket = _.findLast($scope.state.aggs, agg => agg.schema.group === 'buckets');
     const isComparingOrderValid = comparingBucket && lastBucket && lastBucket.id === comparingBucket.id;
     if (!isComparingOrderValid) errorMessage = VALIDATION_ERROR_MESSAGES.LAST_BUCKET;
 
     // Checks if date_histogram is first bucket
     const dateHistogramBuckets = getAggByType('date_histogram');
     const dateHistogramBucket = dateHistogramBuckets[0];
-    const firstBucket = $scope.vis.getAggConfig().find(agg => agg.schema.group === 'buckets');
+    const firstBucket = $scope.state.aggs.find(agg => agg.schema.group === 'buckets');
     const isDateHistogramOrderValid = dateHistogramBucket ? firstBucket && firstBucket.id === dateHistogramBucket.id : true;
     if (!isDateHistogramOrderValid) errorMessage = VALIDATION_ERROR_MESSAGES.DATE_HISTOGRAM_FIRST;
 
@@ -68,7 +68,7 @@ export function comparingAggController($scope) {
     const canUseAggregation = isComparingOrderValid && isDateHistogramOrderValid && isDateHistogramCountValid;
 
     // Removes error from comparing bucket
-    if (comparingBucket.error) delete comparingBucket.error;
+    if (comparingBucket && comparingBucket.error) delete comparingBucket.error;
 
     // Adds an error message if needed
     if ($scope.aggForm.agg) $scope.aggForm.agg.$setValidity('bucket', canUseAggregation);
