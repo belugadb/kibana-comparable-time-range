@@ -1,7 +1,6 @@
 import chrome from 'ui/chrome';
 import { uiModules } from  'ui/modules';
 import { decorateAggTypes } from './decorators/agg_types';
-import { decorateRootSearchSource } from './decorators/root_search_source';
 import { decorateCourierReqHandler } from './decorators/courier_request_handler';
 import { decorateTabbedAggResponseWriterProvider } from './decorators/response_writer';
 import { decorateVis } from './decorators/vis';
@@ -20,7 +19,6 @@ if (appId === 'kibana') {
     .get('comparable_time_range', ['kibana'])
     .run((Private) => {
       decorateAggTypes(Private);
-      decorateRootSearchSource(Private);
       decorateCourierReqHandler(Private);
       decorateTabbedAggResponseWriterProvider(Private);
       decorateVis(Private);

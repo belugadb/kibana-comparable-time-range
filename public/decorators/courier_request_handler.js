@@ -42,7 +42,7 @@ function handleComparing(vis, searchSource) {
   }
 
   // Creates a new time range filter
-  //  `comparing` field will be used in RootSearchSource.filter decorator
+  //  `comparing` field will be used later in removeComparingFilter() function
   const currentFilter = [ ...searchSource.getField('filter') ];
   currentFilter.push({
     comparing: true,
