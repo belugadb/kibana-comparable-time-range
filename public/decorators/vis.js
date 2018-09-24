@@ -1,4 +1,6 @@
+import { VisProvider } from 'ui/vis/vis';
 import { VisTypesRegistryProvider } from 'ui/registry/vis_types';
+import { PersistedState } from 'ui/persisted_state';
 import { Schemas } from 'ui/vis/editors/default/schemas';
 
 const ALLOWED_VIS_TYPES = ['table'];
@@ -35,8 +37,19 @@ function getAggFilter(aggFilter) {
 }
 
 export function decorateVis(Private) {
+  const Vis = Private(VisProvider);
   const VisTypes = Private(VisTypesRegistryProvider);
 
+  // Adds a "clone" method to the Vis class
+  Vis.prototype.clone = function () {
+    const uiJson = this.hasUiState() ? this.getUiState().toJSON() : {};
+    const uiState = new PersistedState(uiJson);
+    const clonedVis = new Vis(this.indexPattern, this.getState(), uiState);
+    clonedVis.editorMode = this.editorMode;
+    return clonedVis;
+  };
+
+  // Adds the "comparing" bucket aggregation in some vis types
   VisTypes.forEach(vis => {
     if (vis.editorConfig && vis.editorConfig.schemas) {
       vis.editorConfig.schemas.buckets.forEach(bucket => {

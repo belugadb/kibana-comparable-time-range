@@ -14,9 +14,13 @@ const appId = chrome.getApp().id;
 
 // Only inject decorator on kibana app
 if (appId === 'kibana') {
+  //  Creating a custom Angular module is breaking some things in v6.4.0.
+  //    That's why default `kibana` module is used below.
+  //    See https://github.com/elastic/kibana/issues/23278
   uiModules
-    .get('comparable_time_range', ['kibana'])
-    .run((Private) => {
+    // .get('comparable_time_range', ['kibana'])
+    .get('kibana')
+    .run(Private => {
       decorateAggTypes(Private);
       decorateCourierReqHandler(Private);
       decorateTabbedAggResponseWriterProvider(Private);
