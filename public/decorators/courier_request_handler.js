@@ -42,10 +42,7 @@ function handleComparing(vis, searchSource) {
   }
 
   // Creates a new time range filter
-  //  `comparing` field will be used later in removeComparingFilter() function
-  const currentFilter = [ ...searchSource.getField('filter') ];
-  currentFilter.push({
-    comparing: true,
+  const comparingFilter = [{
     query: {
       bool: {
         should: [
@@ -56,8 +53,8 @@ function handleComparing(vis, searchSource) {
         ]
       }
     }
-  });
-  searchSource.setField('filter', currentFilter);
+  }];
+  searchSource.setField('filter', comparingFilter);
 }
 
 /**
@@ -69,17 +66,12 @@ function handleComparing(vis, searchSource) {
  * @param {*} vis
  * @param {*} searchSource
  */
-function removeComparingFilter(vis, searchSource) {
+function resetDateHistogramParams(vis) {
   // Resets date_histogram params values
   if (vis.aggs.byTypeName.date_histogram) {
     vis.aggs.byTypeName.date_histogram[0].params.min_doc_count = 1;
     vis.aggs.byTypeName.date_histogram[0].params.extended_bounds = {};
   }
-
-  // Removes comparing time range filter
-  const currentFilter = [ ...searchSource.getField('filter') ];
-  const filterWithoutComparing = currentFilter.filter(f => !f.comparing);
-  searchSource.setField('filter', filterWithoutComparing);
 }
 
 export function decorateCourierReqHandler(Private) {
@@ -89,18 +81,29 @@ export function decorateCourierReqHandler(Private) {
   requestHandlers.byName.courier.handler = function (vis, params) {
     // Returns default courier handler function if comparing agg is missing
     const isUsingComparing = !!vis.aggs.byTypeName.comparing;
-    if (!isUsingComparing) return handlerFn.apply(this, arguments);
+    if (!isUsingComparing) return handlerFn(...arguments);
 
-    // Adds comparing time range filter if needed
-    handleComparing(vis, params.searchSource);
+    // Creates a new search source that inherits the original search source
+    //  Using callParentStartHandlers: true we make sure that the parent searchSource
+    //  onSearchRequestStart will be called properly even though we use an inherited
+    //  search source
+    const comparingSearchSource = params.searchSource.createChild({ callParentStartHandlers: true });
 
-    // Removes timeRange, so courier won't set global timeRange filter
-    const newParams = { ...params, timeRange: null };
-    const resp = handlerFn.apply(this, [vis, newParams]);
+    // Adds comparing time range filter
+    handleComparing(vis, comparingSearchSource);
 
-    // Removes injected filter
-    removeComparingFilter(vis, params.searchSource);
+    const newParams = {
+      ...params,
+      // Overrides searchSource for comparing one
+      searchSource: comparingSearchSource,
+      // Removes timeRange, so courier won't set global timeRange filter
+      timeRange: null
+    };
 
-    return resp;
+    return handlerFn(vis, newParams)
+      .then(resp => {
+        resetDateHistogramParams(vis);
+        return resp;
+      });
   };
 }
