@@ -95,8 +95,8 @@ export function decorateCourierReqHandler(Private) {
     handleComparing(vis, params.searchSource);
 
     // Removes timeRange, so courier won't set global timeRange filter
-    params.timeRange = null;
-    const resp = handlerFn.apply(this, [vis, params]);
+    const newParams = { ...params, timeRange: null };
+    const resp = handlerFn.apply(this, [vis, newParams]);
 
     // Removes injected filter
     removeComparingFilter(vis, params.searchSource);
