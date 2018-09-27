@@ -45,6 +45,10 @@ function buildComparingBucket(bucket, comparingBucket, comparingAggId) {
     bucket[comparingAggId].buckets[1]
   ];
 
+  // Marks comparing bucket with an "Already Computed" flag,
+  //  so it can be filtered out later 
+  comparingBucket.comparingAlreadyComputed = true;
+  
   return {
     ...bucket,
     [comparingAggId]: {
@@ -108,6 +112,32 @@ function isBucketValueEmpty(bucket, comparingAggId) {
 }
 
 /**
+ * Filters out already computed buckets recursively.
+ *
+ * @param {*} bucket 
+ */
+function removeComputedBuckets(bucket) {
+  // Finds next bucket child (looks for buckets array inside every child)
+  // (returns bucket itself if not found)
+  const nextAggId = Object.keys(bucket).find(k => !!bucket[k].buckets);
+  if (!nextAggId) return bucket;
+  
+  // Calls itself recursively, looking for next aggregation
+  //  (also filters out already computed buckets)
+  const newBuckets = bucket[nextAggId].buckets
+    .filter(b => !b.comparingAlreadyComputed)
+    .map(removeComputedBuckets)
+
+  return {
+    ...bucket,
+    [nextAggId]: {
+      ...bucket[nextAggId],
+      buckets: newBuckets
+    }
+  };
+}
+
+/**
  * Handles date_histogram in response.aggregations
  *
  * @param {*} vis
@@ -120,6 +150,10 @@ function handleDateHistogramResponse(vis, response, comparingAgg) {
   const comparingAggId = comparingAgg.id;
   const comparingOffset = getOffset(vis.API.timeFilter, comparingAgg.params.range);
   const currentDateFilter = vis.API.timeFilter.getBounds();
+  const comparingRanges = {
+    from: getDate(currentDateFilter.min, comparingOffset),
+    to: getDate(currentDateFilter.max, comparingOffset)
+  };
 
   // Considering there's only one date_histogram agg
   const dateHistogramAgg = vis.aggs.byTypeName.date_histogram[0];
@@ -128,16 +162,43 @@ function handleDateHistogramResponse(vis, response, comparingAgg) {
   // Considering date_histogram is the first bucket agg
   const dateHistogramBuckets = response.aggregations[dateHistogramAgg.id].buckets;
 
-  // Extract the comparing values from sibbling buckets
-  const bucketsWithComparing = dateHistogramBuckets.map(bucket => {
-    // Gets comparing date to look for in sibbling buckets
-    const comparingBucketDate = getDate(bucket.key, comparingOffset);
+  const bucketsWithComparing = dateHistogramBuckets
+    // Extracts the comparing values from sibbling buckets
+    .map(bucket => {
+      // Gets comparing date to look for in sibbling buckets
+      const comparingBucketDate = getDate(bucket.key, comparingOffset);
 
-    // Finds comparingBucket using comparing date
-    const comparingBucket = dateHistogramBuckets.find(b => b.key === comparingBucketDate.valueOf());
+      // Finds comparingBucket using comparing date
+      const comparingBucket = dateHistogramBuckets.find(b => b.key === comparingBucketDate.valueOf());
+      
+      return getComparingFromDateHistogram(bucket, comparingBucket, comparingAggId);
+    })
 
-    return getComparingFromDateHistogram(bucket, comparingBucket, comparingAggId);
-  })
+    // Collects remaining buckets from comparing range
+    //  In some cases, ES is not filling empty buckets with `0` value anymore (v6.4.0 or above)
+    //  This step shifts uncomputed buckets from comparing range to current range.
+    .filter(bucket => !bucket.comparingAlreadyComputed) // Filters out already computed buckets (first level)
+    .map(bucket => {
+      const bucketDate = getDate(bucket.key);
+      
+      // Moment's isBetween last parameter ('[)') sets range inclusivity. See https://momentjs.com/docs/#/query/is-between/
+      const isBucketInComparingRange = !!bucketDate.isBetween(comparingRanges.from, comparingRanges.to, null, '[)');
+
+      // If bucket is out of comparing range or has no children, returns unchanged bucket
+      if (!isBucketInComparingRange || !bucket.doc_count) return bucket;
+
+      // Removes nested already computed buckets
+      const uncomputedBucket = removeComputedBuckets(bucket);
+
+      // Shfts bucket date to current date bounds
+      const uncomputedBucketDate = bucketDate.clone().add(comparingOffset.value, comparingOffset.unit)
+      return {
+        ...uncomputedBucket,
+        key: uncomputedBucketDate.valueOf(),
+        key_as_string: uncomputedBucketDate.format("YYYY-MM-DDTHH:mm:ss.SSSZ")
+      }
+    })
+
     // Filters out unwanted out-of-bounds buckets.
     //  This step is necessary since ES response contains both current and comparing range buckets
     .filter(bucket => {
