@@ -45,10 +45,6 @@ function buildComparingBucket(bucket, comparingBucket, comparingAggId) {
     bucket[comparingAggId].buckets[1]
   ];
 
-  // Marks comparing bucket with an "Already Computed" flag,
-  //  so it can be filtered out later 
-  comparingBucket.comparingAlreadyComputed = true;
-  
   return {
     ...bucket,
     [comparingAggId]: {
@@ -72,13 +68,19 @@ function getComparingFromDateHistogram(bucket, comparingBucket, comparingAggId) 
   //  value in comparing range, so just returns bucket itself
   if (!comparingBucket) return bucket;
   // If the current bucket level contains comparingAggId, formats bucket
-  const formattedBucket = containsAgg(bucket, comparingAggId)
+  const containsComparingAgg = containsAgg(bucket, comparingAggId);
+  const formattedBucket = containsComparingAgg
     ? buildComparingBucket(bucket, comparingBucket, comparingAggId)
     : bucket;
   // Finds next bucket child (looks for buckets array inside every child)
   //  (if not found, it's the last bucket, then returns `formattedBucket` itself)
   const nextAggId = Object.keys(formattedBucket).find(k => !!formattedBucket[k].buckets && k !== comparingAggId);
-  if (!nextAggId) return formattedBucket;
+  if (!nextAggId){
+    // Marks comparing bucket with an "Already Computed" flag, so it can be filtered out later 
+    if(containsComparingAgg) comparingBucket.comparingAlreadyComputed = true;
+    return formattedBucket;
+  }
+  
   // Calls itself recursively for every bucket
   const newBuckets = formattedBucket[nextAggId].buckets.map(subBucket => {
     // Gets next level from comparingBucket
@@ -95,19 +97,28 @@ function getComparingFromDateHistogram(bucket, comparingBucket, comparingAggId) 
 }
 
 /**
- * Checks if bucket values are not empty (`doc_count: 0`).
+ * Checks if bucket values are not empty (`doc_count: 0`)
+ *  or subBuckets are not empty arrays.
  * Looks recursively for the `comparingAggId` bucket
  *
  * @param {*} bucket
  * @param {*} comparingAggId
  */
 function isBucketValueEmpty(bucket, comparingAggId) {
-  if (containsAgg(bucket, comparingAggId)) {
-    // Checks `doc_count` from both current (buckets[1]) and comparing (buckets[0]) date ranges
-    return !bucket[comparingAggId].buckets[0].doc_count && !bucket[comparingAggId].buckets[1].doc_count;
-  }
-  // if comparingAggId is not found, calls itself recursively, looking for next aggregation
+  // Checks `doc_count` from both current (buckets[1]) and comparing (buckets[0]) date ranges
+  const noDocCount = containsAgg(bucket, comparingAggId) &&
+    !bucket[comparingAggId].buckets[0].doc_count &&
+    !bucket[comparingAggId].buckets[1].doc_count;
+  
+  // Checks if it's the last bucket, and if it is, returns noDocCount validation
   const nextAggId = Object.keys(bucket).find(k => !!bucket[k].buckets && k !== comparingAggId);
+  if(!nextAggId) return noDocCount;
+
+  // Returns true (empty) for buckets whose subBuckets are empty arrays
+  //  This is useful for "metrics for every bucket/level" response
+  if(!bucket[nextAggId].buckets.length) return true;
+
+  // Finally, calls itself recursively, looking for next aggregation
   return !!bucket[nextAggId].buckets.find(subBucket => isBucketValueEmpty(subBucket, comparingAggId));
 }
 
@@ -116,17 +127,17 @@ function isBucketValueEmpty(bucket, comparingAggId) {
  *
  * @param {*} bucket 
  */
-function removeComputedBuckets(bucket) {
+function removeComputedBuckets(bucket, comparingAggId) {
   // Finds next bucket child (looks for buckets array inside every child)
   // (returns bucket itself if not found)
-  const nextAggId = Object.keys(bucket).find(k => !!bucket[k].buckets);
+  const nextAggId = Object.keys(bucket).find(k => !!bucket[k].buckets && k !== comparingAggId);
   if (!nextAggId) return bucket;
   
   // Calls itself recursively, looking for next aggregation
   //  (also filters out already computed buckets)
   const newBuckets = bucket[nextAggId].buckets
     .filter(b => !b.comparingAlreadyComputed)
-    .map(removeComputedBuckets)
+    .map(b => removeComputedBuckets(b, comparingAggId))
 
   return {
     ...bucket,
@@ -188,7 +199,7 @@ function handleDateHistogramResponse(vis, response, comparingAgg) {
       if (!isBucketInComparingRange || !bucket.doc_count) return bucket;
 
       // Removes nested already computed buckets
-      const uncomputedBucket = removeComputedBuckets(bucket);
+      const uncomputedBucket = removeComputedBuckets(bucket, comparingAggId);
 
       // Shfts bucket date to current date bounds
       const uncomputedBucketDate = bucketDate.clone().add(comparingOffset.value, comparingOffset.unit)
