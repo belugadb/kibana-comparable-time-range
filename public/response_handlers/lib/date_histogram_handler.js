@@ -186,7 +186,7 @@ function handleDateHistogramResponse(vis, response, comparingAgg) {
     })
 
     // Collects remaining buckets from comparing range
-    //  In some cases, ES is not filling empty buckets with `0` value anymore (v6.4.0 or above)
+    //  In some cases, ES is not filling empty buckets with `0` value (usually when splitting buckets by terms)
     //  This step shifts uncomputed buckets from comparing range to current range.
     .filter(bucket => !bucket.comparingAlreadyComputed) // Filters out already computed buckets (first level)
     .map(bucket => {
