@@ -7,13 +7,22 @@
 ![example-usage.gif](docs/img/example-usage.gif)
 
 ## Installation
-This plugin is currently under development and it has been tested in Kibana `6.1.1` version only.
-To install, run this command from your Kibana project folder:
+You can use this plugin in the following Kibana versions:
+
+| Kibana Version  | Plugin Version |
+| --------------- | -------------- |
+| 6.4.x  | [0.1.0](https://github.com/belugadb/kibana-comparable-time-range/releases/v0.1.0)  |
+| 6.1.1  | [0.0.4](https://github.com/belugadb/kibana-comparable-time-range/releases/tag/v0.0.4)  |
+
+To install, run this command from your Kibana project folder, changing `<plugin-version>` and `<kibana-version>`, accordingly to our [repository releases](https://github.com/belugadb/kibana-comparable-time-range/releases):
 ```
-./bin/kibana-plugin install https://github.com/belugadb/kibana-comparable-time-range/releases/download/v0.0.4/comparable_time_range-0.0.4.zip
+./bin/kibana-plugin install https://github.com/belugadb/kibana-comparable-time-range/releases/download/v<plugin-version>/comparable_time_range-<plugin-version>-kibana-<kibana-version>.zip
 ```
 
-You can also install previous versions of this plugin. Check the [repository releases](https://github.com/belugadb/kibana-comparable-time-range/releases).
+Example for Kibana `6.4.1`:
+```
+./bin/kibana-plugin install https://github.com/belugadb/kibana-comparable-time-range/releases/download/v0.1.0/comparable_time_range-0.1.0-kibana-6.4.1.zip
+```
 
 ## Development
 
