@@ -1,16 +1,11 @@
+import { aggTypes } from 'ui/agg_types';
+import { MetricAggType } from 'ui/agg_types/metrics/metric_agg_type';
+import { countMetricAgg } from 'ui/agg_types/metrics/count';
 import { AggConfig } from 'ui/vis/agg_config';
-import * as AggTypesProv from 'ui/agg_types';
-import * as MetricAggTypeProv from 'ui/agg_types/metrics/metric_agg_type';
-import * as countMetricAggProv from 'ui/agg_types/metrics/count';
-import { AggTypesBucketsComparingProvider } from '../agg_types/comparing';
+import { comparingBucketAgg } from '../agg_types/comparing';
 
-export function decorateAggTypes(Private) {
-  const AggComparing = Private(AggTypesBucketsComparingProvider);
-  const MetricAggType = MetricAggTypeProv.MetricAggType || Private(MetricAggTypeProv.AggTypesMetricsMetricAggTypeProvider);
-  const CountAggType = countMetricAggProv.countMetricAgg || Private(countMetricAggProv.AggTypesMetricsCountProvider);
-  const AggTypes = AggTypesProv.aggTypes || Private(AggTypesProv.AggTypesIndexProvider);
-
-  // Adds getComparing and getDifference functions in AggConfig/MetricAggType/CountAggType
+export function decorateAggTypes() {
+  // Adds getComparing and getDifference functions in AggConfig/MetricAggType/countMetricAgg
   AggConfig.prototype.getComparing = function (bucket) {
     return this.type.getComparing(this, bucket);
   };
@@ -23,14 +18,14 @@ export function decorateAggTypes(Private) {
   MetricAggType.prototype.getDifference = (agg, bucket) => {
     return bucket[agg.id] && bucket[agg.id].difference;
   };
-  CountAggType.getComparing = (agg, bucket) => {
+  countMetricAgg.getComparing = (agg, bucket) => {
     return bucket.doc_count_comparing;
   };
-  CountAggType.getDifference = (agg, bucket) => {
+  countMetricAgg.getDifference = (agg, bucket) => {
     return bucket.doc_count_difference;
   };
 
-  // Adds AggComparing in AggTypes list
-  AggComparing.type = 'buckets';
-  AggTypes.push(AggComparing);
+  // Adds comparingBucketAgg in aggTypes list
+  comparingBucketAgg.type = 'buckets';
+  aggTypes.push(comparingBucketAgg);
 }

@@ -2,7 +2,7 @@ import chrome from 'ui/chrome';
 import { uiModules } from  'ui/modules';
 import { decorateAggTypes } from './decorators/agg_types';
 import { decorateCourierReqHandler } from './decorators/courier_request_handler';
-import { decorateTabbedAggResponseWriterProvider } from './decorators/response_writer';
+import { decorateTabbedAggResponseWriter } from './decorators/response_writer';
 import { decorateVis } from './decorators/vis';
 import { decorateAggConfigs } from './decorators/agg_configs';
 import { decorateAggConfigResult } from './decorators/agg_config_result';
@@ -21,11 +21,11 @@ if (appId === 'kibana') {
     // .get('comparable_time_range', ['kibana'])
     .get('kibana')
     .run(Private => {
-      decorateAggTypes(Private);
+      decorateAggTypes();
       decorateCourierReqHandler(Private);
-      decorateTabbedAggResponseWriterProvider(Private);
+      decorateTabbedAggResponseWriter();
       decorateVis(Private);
-      decorateAggConfigs(Private);
+      decorateAggConfigs();
       decorateAggConfigResult();
     });
 }

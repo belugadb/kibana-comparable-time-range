@@ -1,7 +1,7 @@
 import { TabbedAggResponseWriter } from 'ui/agg_response/tabify/_response_writer';
 
-export function decorateTabbedAggResponseWriterProvider(Private) {
-
+export function decorateTabbedAggResponseWriter() {
+  
   const cellFn = TabbedAggResponseWriter.prototype.cell;
   TabbedAggResponseWriter.prototype.cell = function (agg, value, block, comparing, difference) {
     const resp = cellFn.apply(this, arguments);

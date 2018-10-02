@@ -1,6 +1,6 @@
 import chrome from 'ui/chrome';
 import { uiModules } from 'ui/modules';
-import { ComparingProvider } from '../lib/comparing';
+import { getDifference } from '../lib/comparing';
 const appId = chrome.getApp().id;
 
 // Only inject decorator on kibana app
@@ -13,9 +13,8 @@ if (appId === 'kibana') {
         const directive = $delegate[0];
         const controllerName = directive.controller;
 
-        directive.controller = function ($scope, Private) {
+        directive.controller = function ($scope) {
           angular.extend(this, $controller(controllerName, { $scope: $scope }));
-          const getDifference = Private(ComparingProvider);
 
           // This will run after $scope.$watch('table') from default controller
           $scope.$watch('table', () => {

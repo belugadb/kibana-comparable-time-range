@@ -1,9 +1,7 @@
 import _ from 'lodash'; // TODO: refactor lodash dependencies
-import * as prov from 'ui/vis/agg_configs';
+import { AggConfigs } from 'ui/vis/agg_configs';
 
-export function decorateAggConfigs(Private) {
-  // eslint-disable-next-line import/namespace
-  const AggConfigs = prov.AggConfigs || Private(prov.VisAggConfigsProvider);
+export function decorateAggConfigs() {
 
   /**
    * Recursively removes undefined values from object.

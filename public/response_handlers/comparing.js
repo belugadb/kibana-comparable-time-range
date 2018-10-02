@@ -1,12 +1,11 @@
 import _ from 'lodash'; // TODO: refactor lodash dependencies
 import { tabifyComparingAggResponse } from './tabify_comparing';
 import { VisResponseHandlersRegistryProvider } from 'ui/registry/vis_response_handlers';
-import { ComparingProvider } from '../lib/comparing';
+import { getDifference } from '../lib/comparing';
 import { handleDateHistogramResponse } from './lib/date_histogram_handler';
 import { containsAgg } from './lib/utils';
 
-function ComparingResponseHandlerProvider(Private) {
-  const getDifference = Private(ComparingProvider);
+function ComparingResponseHandlerProvider() {
 
   function getBucketValues(buckets, aggId) {
     // If aggId is missing, returns doc_count values
