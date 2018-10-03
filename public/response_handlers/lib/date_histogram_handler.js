@@ -76,12 +76,12 @@ function getComparingFromDateHistogram(bucket, comparingBucket, comparingAggId) 
   // Finds next bucket child (looks for buckets array inside every child)
   //  (if not found, it's the last bucket, then returns `formattedBucket` itself)
   const nextAggId = Object.keys(formattedBucket).find(k => !!formattedBucket[k].buckets && k !== comparingAggId);
-  if (!nextAggId){
-    // Marks comparing bucket with an "Already Computed" flag, so it can be filtered out later 
-    if(containsComparingAgg) comparingBucket.comparingAlreadyComputed = true;
+  if (!nextAggId) {
+    // Marks comparing bucket with an "Already Computed" flag, so it can be filtered out later
+    if (containsComparingAgg) comparingBucket.comparingAlreadyComputed = true;
     return formattedBucket;
   }
-  
+
   // Calls itself recursively for every bucket
   const newBuckets = formattedBucket[nextAggId].buckets.map(subBucket => {
     // Gets next level from comparingBucket
@@ -110,14 +110,14 @@ function isBucketValueEmpty(bucket, comparingAggId) {
   const noDocCount = containsAgg(bucket, comparingAggId) &&
     !bucket[comparingAggId].buckets[0].doc_count &&
     !bucket[comparingAggId].buckets[1].doc_count;
-  
+
   // Checks if it's the last bucket, and if it is, returns noDocCount validation
   const nextAggId = Object.keys(bucket).find(k => !!bucket[k].buckets && k !== comparingAggId);
-  if(!nextAggId) return noDocCount;
+  if (!nextAggId) return noDocCount;
 
   // Returns true (empty) for buckets whose subBuckets are empty arrays
   //  This is useful for "metrics for every bucket/level" response
-  if(!bucket[nextAggId].buckets.length) return true;
+  if (!bucket[nextAggId].buckets.length) return true;
 
   // Finally, calls itself recursively, looking for next aggregation
   return !!bucket[nextAggId].buckets.find(subBucket => isBucketValueEmpty(subBucket, comparingAggId));
@@ -126,19 +126,19 @@ function isBucketValueEmpty(bucket, comparingAggId) {
 /**
  * Filters out already computed buckets recursively.
  *
- * @param {*} bucket 
+ * @param {*} bucket
  */
 function removeComputedBuckets(bucket, comparingAggId) {
   // Finds next bucket child (looks for buckets array inside every child)
   // (returns bucket itself if not found)
   const nextAggId = Object.keys(bucket).find(k => !!bucket[k].buckets && k !== comparingAggId);
   if (!nextAggId) return bucket;
-  
+
   // Calls itself recursively, looking for next aggregation
   //  (also filters out already computed buckets)
   const newBuckets = bucket[nextAggId].buckets
     .filter(b => !b.comparingAlreadyComputed)
-    .map(b => removeComputedBuckets(b, comparingAggId))
+    .map(b => removeComputedBuckets(b, comparingAggId));
 
   return {
     ...bucket,
@@ -182,7 +182,7 @@ function handleDateHistogramResponse(vis, response, comparingAgg) {
 
       // Finds comparingBucket using comparing date
       const comparingBucket = dateHistogramBuckets.find(b => b.key === comparingBucketDate.valueOf());
-      
+
       return getComparingFromDateHistogram(bucket, comparingBucket, comparingAggId);
     })
 
@@ -195,7 +195,7 @@ function handleDateHistogramResponse(vis, response, comparingAgg) {
         from: getDate(bucket.key),
         to: getDate(bucket.key).clone().add(1, dateHistogramIntervalUnit)
       };
-      
+
       // Moment's isBetween last parameter ('[)') sets range inclusivity. See https://momentjs.com/docs/#/query/is-between/
       const isBucketInDateFilter = !!bucketBounds.from.isBetween(currentDateFilter.min, currentDateFilter.max, null, '[)');
       const bucketContainsDateFilterFrom = currentDateFilter.min.isBetween(bucketBounds.from, bucketBounds.to, null, '[)');
@@ -214,8 +214,8 @@ function handleDateHistogramResponse(vis, response, comparingAgg) {
       return {
         ...uncomputedBucket,
         key: uncomputedBucketDate.valueOf(),
-        key_as_string: uncomputedBucketDate.format("YYYY-MM-DDTHH:mm:ss.SSSZ")
-      }
+        key_as_string: uncomputedBucketDate.format('YYYY-MM-DDTHH:mm:ss.SSSZ')
+      };
     })
 
     // Filters out unwanted out-of-bounds buckets.

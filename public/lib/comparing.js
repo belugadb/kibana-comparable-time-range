@@ -42,4 +42,4 @@ export function getDifference(n1, n2, isPercentage) {
   const diffFn = isPercentage ? findDifferencePct : findDifferenceAbs;
   const diff = diffFn(n1, n2);
   return formatValue(diff, isPercentage);
-};
+}
