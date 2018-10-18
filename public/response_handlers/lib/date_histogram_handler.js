@@ -1,3 +1,4 @@
+import _ from 'lodash'; // TODO: refactor lodash dependencies
 import moment from 'moment';
 import dateMath from '@elastic/datemath';
 import { containsAgg } from './utils';
@@ -171,7 +172,7 @@ function handleDateHistogramResponse(vis, response, comparingAgg) {
   const dateHistogramIntervalUnit = dateHistogramAgg.params.interval.val;
 
   // Considering date_histogram is the first bucket agg
-  const dateHistogramBuckets = response.aggregations[dateHistogramAgg.id].buckets;
+  const dateHistogramBuckets = _.cloneDeep(response.aggregations[dateHistogramAgg.id].buckets);
 
   const bucketsWithComparing = dateHistogramBuckets
     // Extracts the comparing values from sibbling buckets
@@ -190,19 +191,25 @@ function handleDateHistogramResponse(vis, response, comparingAgg) {
     //  This step shifts uncomputed buckets from comparing range to current range.
     .filter(bucket => !bucket.comparingAlreadyComputed) // Filters out already computed buckets (first level)
     .map(bucket => {
-      const bucketDate = getDate(bucket.key);
+      const bucketBounds = {
+        from: getDate(bucket.key),
+        to: getDate(bucket.key).clone().add(1, dateHistogramIntervalUnit)
+      };
       
       // Moment's isBetween last parameter ('[)') sets range inclusivity. See https://momentjs.com/docs/#/query/is-between/
-      const isBucketInComparingRange = !!bucketDate.isBetween(comparingRanges.from, comparingRanges.to, null, '[)');
-
-      // If bucket is out of comparing range or has no children, returns unchanged bucket
-      if (!isBucketInComparingRange || !bucket.doc_count) return bucket;
+      const isBucketInDateFilter = !!bucketBounds.from.isBetween(currentDateFilter.min, currentDateFilter.max, null, '[)');
+      const isBucketInComparingRange = !!bucketBounds.from.isBetween(comparingRanges.from, comparingRanges.to, null, '[)');
+      const bucketContainsComparingRangeFrom = comparingRanges.from.isBetween(bucketBounds.from, bucketBounds.to, null, '[)');
+      
+      // If bucket is in current filter range, out of comparing range or has no children, returns unchanged bucket
+      const isBucketOutOfComparingRange = !isBucketInComparingRange && !bucketContainsComparingRangeFrom;
+      if (isBucketInDateFilter || isBucketOutOfComparingRange || !bucket.doc_count) return bucket;
 
       // Removes nested already computed buckets
       const uncomputedBucket = removeComputedBuckets(bucket, comparingAggId);
 
       // Shfts bucket date to current date bounds
-      const uncomputedBucketDate = bucketDate.clone().add(comparingOffset.value, comparingOffset.unit)
+      const uncomputedBucketDate = bucketBounds.from.clone().add(comparingOffset.value, comparingOffset.unit);
       return {
         ...uncomputedBucket,
         key: uncomputedBucketDate.valueOf(),
