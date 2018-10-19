@@ -103,9 +103,6 @@ const ComparingRequestHandlerProvider = function (Private, courier, timefilter) 
         searchSource.set('query', appState.query);
       }
 
-      // Adds comparing time range filter if needed
-      handleComparing(vis, searchSource);
-
       const shouldQuery = () => {
         if (!searchSource.lastQuery || vis.reload) return true;
         if (!_.isEqual(_.cloneDeep(searchSource.get('filter')), searchSource.lastQuery.filter)) return true;
@@ -118,8 +115,14 @@ const ComparingRequestHandlerProvider = function (Private, courier, timefilter) 
 
       return new Promise((resolve, reject) => {
         if (shouldQuery()) {
+          // Adds comparing time range filter if needed
+          handleComparing(vis, searchSource);
+
           delete vis.reload;
           searchSource.onResults().then(resp => {
+            // Removes injected filter
+            removeComparingFilter(vis, searchSource);
+
             searchSource.lastQuery = {
               filter: _.cloneDeep(searchSource.get('filter')),
               query: _.cloneDeep(searchSource.get('query')),
@@ -128,9 +131,6 @@ const ComparingRequestHandlerProvider = function (Private, courier, timefilter) 
             };
 
             searchSource.rawResponse = resp;
-
-            // Removes injected filter
-            removeComparingFilter(vis, searchSource);
 
             resolve(resp);
           }).catch(e => reject(e));
