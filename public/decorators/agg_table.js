@@ -88,6 +88,21 @@ if (appId === 'kibana') {
               return formattedColumn;
             });
           });
+
+          // Formats comparing values in CSV text output
+          //  TODO: this quick-fix should be replaced with a refactored version of `public/lib/comparing.js` file.
+          const exportAsCsvFn = this.exportAsCsv;
+          this.exportAsCsv = function (formatted) {
+            const table = $scope.table;
+            const isUsingComparing = table && table.rows[0] && !!table.rows[0].find(col => col.hasOwnProperty('comparing'));
+            // If comparing is missing, calls original CSV function
+            if (!isUsingComparing) return exportAsCsvFn(formatted);
+
+            const COMPARING_TAGS = new RegExp('<span class=comparing-text(--negative)?>|</span>', 'g');
+            const csvText = this.toCsv(formatted).replace(COMPARING_TAGS, '');
+            const csv = new Blob([csvText], { type: 'text/plain;charset=utf-8' });
+            this._saveAs(csv, this.csv.filename);
+          };
         };
 
         return $delegate;
