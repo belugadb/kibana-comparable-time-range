@@ -198,12 +198,13 @@ function handleDateHistogramResponse(vis, response, comparingAgg) {
       
       // Moment's isBetween last parameter ('[)') sets range inclusivity. See https://momentjs.com/docs/#/query/is-between/
       const isBucketInDateFilter = !!bucketBounds.from.isBetween(currentDateFilter.min, currentDateFilter.max, null, '[)');
+      const bucketContainsDateFilterFrom = currentDateFilter.min.isBetween(bucketBounds.from, bucketBounds.to, null, '[)');
       const isBucketInComparingRange = !!bucketBounds.from.isBetween(comparingRanges.from, comparingRanges.to, null, '[)');
       const bucketContainsComparingRangeFrom = comparingRanges.from.isBetween(bucketBounds.from, bucketBounds.to, null, '[)');
-      
+
       // If bucket is in current filter range, out of comparing range or has no children, returns unchanged bucket
       const isBucketOutOfComparingRange = !isBucketInComparingRange && !bucketContainsComparingRangeFrom;
-      if (isBucketInDateFilter || isBucketOutOfComparingRange || !bucket.doc_count) return bucket;
+      if (isBucketInDateFilter || bucketContainsDateFilterFrom || isBucketOutOfComparingRange || !bucket.doc_count) return bucket;
 
       // Removes nested already computed buckets
       const uncomputedBucket = removeComputedBuckets(bucket, comparingAggId);
