@@ -141,17 +141,10 @@ function ComparingResponseHandlerProvider() {
     return newVis;
   }
 
-  function shouldHandleResponse(vis) {
-    // enhanced-table plugin handles response in `esResponse` watcher from EnhancedTableVisController
-    return vis.type.name !== 'enhanced-table';
-  }
-
   return {
     name: 'comparing',
     handler: (vis, response) => {
       return new Promise(resolve => {
-        if (!shouldHandleResponse(vis)) return resolve(response);
-
         const newResponse = handleComparingResponse(vis, response);
         const newVis = handleVis(vis);
 
